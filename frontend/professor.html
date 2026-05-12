@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Painel Professor</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  />
+
+</head>
+
+<body>
+
+  <!-- MENU COOLDOWN -->
+
+  <div class="cooldownMenu">
+
+    <button
+      class="cooldownBotao"
+      onclick="abrirCooldowns()"
+    >
+      ⏰
+    </button>
+
+    <div
+      id="cooldownLista"
+      class="cooldownLista"
+      style="display:none;"
+    >
+
+      <h3>Cooldown</h3>
+
+      <div id="cooldowns"></div>
+
+    </div>
+
+  </div>
+
+  <!-- LOGIN -->
+
+  <div
+    id="login"
+    class="loginContainer"
+  >
+
+    <div class="loginBox">
+
+      <h1>Painel Professor</h1>
+
+      <input
+        id="usuario"
+        type="text"
+        placeholder="Usuário"
+      />
+
+      <input
+        id="senha"
+        type="password"
+        placeholder="Senha"
+      />
+
+      <button onclick="login()">
+        Entrar
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- PAINEL -->
+
+  <div
+    id="painel"
+    style="display:none;"
+  >
+
+    <!-- TOPO -->
+
+    <div class="topo">
+
+      <h1>
+        Controle Banheiro
+      </h1>
+
+      <div id="contador">
+        0 alunos
+      </div>
+
+    </div>
+
+    <!-- BOTÕES -->
+
+    <div class="acoes">
+
+      <button onclick="proximoAluno()">
+        Avisar Aluno
+      </button>
+
+      <button onclick="alunoVoltou()">
+        Aluno Voltou
+      </button>
+
+      <button onclick="abrirLista()">
+        ☰
+      </button>
+
+    </div>
+
+    <!-- PRIMEIRO -->
+
+    <div id="primeiro"></div>
+
+    <!-- FILA -->
+
+    <div id="fila"></div>
+
+    <!-- MENU ALUNOS -->
+
+    <div
+      id="menuAlunos"
+      class="menuAlunos"
+      style="display:none;"
+    >
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:15px;
+        "
+      >
+
+        <h2>Adicionar aluno</h2>
+
+        <button
+          onclick="fecharLista()"
+          style="
+            width:40px;
+            height:40px;
+            border:none;
+            border-radius:50%;
+            background:#5b3df5;
+            color:white;
+            font-size:20px;
+            cursor:pointer;
+          "
+        >
+          ✕
+        </button>
+
+      </div>
+
+      <div id="listaAlunos"></div>
+
+    </div>
+
+    <!-- CONTADOR -->
+
+    <div class="contadorTitulo">
+
+      <h2>
+        Vezes no banheiro
+      </h2>
+
+    </div>
+
+    <div id="contadorBanheiro"></div>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script src="professor.js"></script>
+
+</body>
+</html>

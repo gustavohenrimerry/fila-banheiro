@@ -1,0 +1,593 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+
+  font-family:'Inter',sans-serif;
+
+  min-height:100vh;
+
+  background:
+    radial-gradient(circle at top left,#4f46e5 0%,transparent 30%),
+    radial-gradient(circle at bottom right,#7c3aed 0%,transparent 30%),
+    linear-gradient(135deg,#0f172a,#111827,#1e1b4b);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:20px;
+
+  color:white;
+
+}
+
+/* ========================= */
+/* CONTAINERS */
+/* ========================= */
+
+.container,
+.login,
+.painel,
+.loginContainer{
+
+  width:100%;
+
+  max-width:420px;
+
+}
+
+/* ========================= */
+/* LOGIN */
+/* ========================= */
+
+.loginBox,
+.container,
+.painel{
+
+  background:rgba(255,255,255,.08);
+
+  backdrop-filter:blur(20px);
+
+  border:1px solid rgba(255,255,255,.08);
+
+  border-radius:30px;
+
+  padding:35px;
+
+  box-shadow:0 20px 40px rgba(0,0,0,.35);
+
+}
+
+/* ========================= */
+/* TITULOS */
+/* ========================= */
+
+h1{
+
+  font-size:34px;
+
+  font-weight:700;
+
+  text-align:center;
+
+  margin-bottom:12px;
+
+}
+
+h2{
+
+  font-size:24px;
+
+  margin-bottom:10px;
+
+}
+
+.subtitulo{
+
+  text-align:center;
+
+  color:#cbd5e1;
+
+  margin-bottom:25px;
+
+}
+
+/* ========================= */
+/* INPUTS */
+/* ========================= */
+
+input{
+
+  width:100%;
+
+  padding:16px;
+
+  margin-top:14px;
+
+  border:none;
+
+  border-radius:18px;
+
+  background:rgba(255,255,255,.08);
+
+  color:white;
+
+  font-size:16px;
+
+  outline:none;
+
+}
+
+input::placeholder{
+
+  color:#94a3b8;
+
+}
+
+/* ========================= */
+/* BOTÕES */
+/* ========================= */
+
+button{
+
+  border:none;
+
+  cursor:pointer;
+
+  transition:.2s;
+
+  font-family:'Inter',sans-serif;
+
+}
+
+button:hover{
+
+  transform:translateY(-2px);
+
+}
+
+.loginBox button,
+.container button{
+
+  width:100%;
+
+  padding:16px;
+
+  margin-top:15px;
+
+  border-radius:18px;
+
+  color:white;
+
+  font-size:16px;
+
+  font-weight:600;
+
+}
+
+.btn-entrar{
+
+  background:linear-gradient(
+    135deg,
+    #4f46e5,
+    #7c3aed
+  );
+
+}
+
+.btn-sair{
+
+  background:rgba(239,68,68,.18);
+
+  color:#fca5a5 !important;
+
+}
+
+/* ========================= */
+/* STATUS */
+/* ========================= */
+
+#status{
+
+  margin-top:25px;
+
+}
+
+.status-info{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-top:15px;
+
+}
+
+.card-status{
+
+  flex:1;
+
+  background:rgba(255,255,255,.06);
+
+  padding:15px;
+
+  border-radius:18px;
+
+  text-align:center;
+
+}
+
+.numero{
+
+  font-size:28px;
+
+  font-weight:700;
+
+  margin-top:5px;
+
+}
+
+/* ========================= */
+/* POPUP */
+/* ========================= */
+
+.popup{
+
+  margin-top:25px;
+
+  background:linear-gradient(
+    135deg,
+    #22c55e,
+    #16a34a
+  );
+
+  padding:25px;
+
+  border-radius:24px;
+
+  text-align:center;
+
+  animation:animar 1s infinite alternate;
+
+}
+
+@keyframes animar{
+
+  from{
+    transform:scale(1);
+  }
+
+  to{
+    transform:scale(1.03);
+  }
+
+}
+
+/* ========================= */
+/* TOPO PROFESSOR */
+/* ========================= */
+
+.topo{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  margin-bottom:20px;
+
+}
+
+#contador{
+
+  background:rgba(255,255,255,.08);
+
+  padding:10px 15px;
+
+  border-radius:15px;
+
+}
+
+/* ========================= */
+/* BOTÕES PROFESSOR */
+/* ========================= */
+
+.acoes{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-bottom:20px;
+
+}
+
+.acoes button{
+
+  flex:1;
+
+  padding:16px;
+
+  border-radius:18px;
+
+  color:white;
+
+  font-size:15px;
+
+  font-weight:600;
+
+}
+
+.acoes button:nth-child(1){
+
+  background:linear-gradient(
+    135deg,
+    #5b3df5,
+    #7c3aed
+  );
+
+}
+
+.acoes button:nth-child(2){
+
+  background:linear-gradient(
+    135deg,
+    #0ea5e9,
+    #2563eb
+  );
+
+}
+
+.acoes button:nth-child(3){
+
+  max-width:70px;
+
+  background:rgba(255,255,255,.08);
+
+  font-size:22px;
+
+}
+
+/* ========================= */
+/* PRIMEIRO ALUNO */
+/* ========================= */
+
+.primeiroAluno{
+
+  background:linear-gradient(
+    135deg,
+    #5b3df5,
+    #7c3aed
+  );
+
+  border-radius:28px;
+
+  padding:30px;
+
+  text-align:center;
+
+  margin-bottom:20px;
+
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+
+}
+
+.primeiroAluno h1{
+
+  font-size:34px;
+
+}
+
+#timer{
+
+  font-size:34px;
+
+  margin-top:15px;
+
+  font-weight:bold;
+
+}
+
+/* ========================= */
+/* FILA */
+/* ========================= */
+
+.aluno{
+
+  margin-top:12px;
+
+  background:rgba(255,255,255,.06);
+
+  padding:18px;
+
+  border-radius:18px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+}
+
+.posicao{
+
+  width:38px;
+  height:38px;
+
+  background:#4f46e5;
+
+  border-radius:50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-weight:bold;
+
+}
+
+/* ========================= */
+/* MENU ALUNOS */
+/* ========================= */
+
+.menuAlunos{
+
+  position:fixed;
+
+  top:100px;
+  right:20px;
+
+  width:340px;
+
+  max-height:500px;
+
+  overflow:auto;
+
+  background:#111827;
+
+  border-radius:25px;
+
+  padding:20px;
+
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+
+  z-index:9999;
+
+}
+
+/* ========================= */
+/* COOLDOWN */
+/* ========================= */
+
+.cooldownMenu{
+
+  position:fixed;
+
+  right:20px;
+  bottom:20px;
+
+  z-index:9999;
+
+}
+
+.cooldownBotao{
+
+  width:60px;
+  height:60px;
+
+  border:none;
+
+  border-radius:50%;
+
+  background:#5b3df5;
+
+  color:white;
+
+  font-size:24px;
+
+  cursor:pointer;
+
+}
+
+.cooldownLista{
+
+  position:absolute;
+
+  bottom:75px;
+  right:0;
+
+  width:320px;
+
+  max-height:400px;
+
+  overflow:auto;
+
+  background:#111827;
+
+  border-radius:25px;
+
+  padding:15px;
+
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+
+}
+
+.cooldownAluno{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  background:rgba(255,255,255,.06);
+
+  padding:12px;
+
+  border-radius:15px;
+
+  margin-bottom:10px;
+
+}
+
+.cooldownTempo{
+
+  color:#8b5cf6;
+
+  font-weight:bold;
+
+}
+
+/* ========================= */
+/* CONTADOR */
+/* ========================= */
+
+.contadorTitulo{
+
+  margin-top:25px;
+  margin-bottom:15px;
+
+}
+
+#contadorBanheiro{
+
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+
+}
+
+/* ========================= */
+/* MOBILE */
+/* ========================= */
+
+@media(max-width:700px){
+
+  .acoes{
+
+    flex-direction:column;
+
+  }
+
+  .menuAlunos{
+
+    width:92%;
+    right:4%;
+
+  }
+
+  .cooldownLista{
+
+    width:92vw;
+
+  }
+
+}
