@@ -1,5 +1,8 @@
 const socket = io(
-  "https://exciting-appreciation-fila-banheiro.up.railway.app/"
+  "https://exciting-appreciation-fila-banheiro.up.railway.app/",
+  {
+    transports: ["polling", "websocket"]
+  }
 );
 
 const alunos = [

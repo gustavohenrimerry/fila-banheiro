@@ -1,4 +1,9 @@
-const socket = io("https://exciting-appreciation-fila-banheiro.up.railway.app/");
+const socket = io(
+  "https://exciting-appreciation-fila-banheiro.up.railway.app/",
+  {
+    transports: ["polling", "websocket"]
+  }
+);
 
 const nomeInput = document.getElementById("nome");
 const statusDiv = document.getElementById("status");
