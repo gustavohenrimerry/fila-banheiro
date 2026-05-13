@@ -1,7 +1,7 @@
 const socket = io(
-  "https://exciting-appreciation-fila-banheiro.up.railway.app/",
+  "https://fila-banheiro-vst4.onrender.com",
   {
-    transports: ["polling", "websocket"]
+    transports: ["polling"]
   }
 );
 
