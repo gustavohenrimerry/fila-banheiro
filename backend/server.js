@@ -7,9 +7,7 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*"
-  }
+  cors: { origin: "*" }
 });
 
 app.use(cors());
@@ -24,40 +22,10 @@ app.get("/", (req, res) => {
 
 let fila = [];
 let historico = [];
-
 const cooldowns = {};
 const contadorBanheiro = {};
 
-const alunos = [
-  "Ana Beatriz Dos Santos Nascimento",
-  "Ana Luisa Tosi Baldino",
-  "Bruna Geovana Amaral Muniz",
-  "Fernanda Oliveira Santos",
-  "Gabrielle Da Costa Silva",
-  "Geovanna Felix Alves De Lima",
-  "Guilherme Nery Bernardino Da Luz",
-  "Gustavo Henrique Rodrigues Souza",
-  "Heliene Aquino Souza Barbosa",
-  "Isabelly Da Silva Nascimento",
-  "Jadilson Inacio Dos Santos",
-  "Jennifer Nascimento Santos",
-  "Joao Pedro Costa De Souza",
-  "Julia Kathelen Barbosa Batista Dos Santos",
-  "Julyanna Silva Do Nascimento",
-  "Keisy Rodrigues Do Nascimento",
-  "Leonardo De Deus Malinoski",
-  "Leticia Vitoria Barros Da Silva",
-  "Marcos Alexandre Da Silva Prado",
-  "Maria Eduarda De Oliveira Ribeiro",
-  "Moises Ferreira Soares",
-  "Pedro Henrique Reis Silva",
-  "Rebeca Keyzi Rodrigues Oliveira",
-  "Renan Da Silva Santos",
-  "Thiago Da Silva Araujo",
-  "Thiago Salomão Martins",
-  "Vinicius Inacio Portela Da Silva",
-  "Yuri Vieira Nogueira"
-];
+const alunos = [/* mantém sua lista igual */];
 
 io.on("connection", (socket) => {
 
@@ -65,13 +33,15 @@ io.on("connection", (socket) => {
   socket.emit("contadorAtualizado", contadorBanheiro);
   socket.emit("cooldownsAtualizados", cooldowns);
 
+  // ENTRAR
   socket.on("entrarFila", (nome) => {
 
     const nomeDigitado = nome.trim().toLowerCase();
 
-    const alunoCompleto = alunos.find(aluno => {
-      return aluno.toLowerCase().startsWith(nomeDigitado);
-    });
+    const alunoCompleto = alunos.find(a =>
+      a.toLowerCase() === nomeDigitado ||
+      a.toLowerCase().startsWith(nomeDigitado)
+    );
 
     if (!alunoCompleto) {
       socket.emit("erroNome", "Nome Incorreto");
@@ -95,23 +65,27 @@ io.on("connection", (socket) => {
     io.emit("filaAtualizada", fila);
   });
 
-  // ✔️ CORRIGIDO AQUI
+  // SAIR (CORRIGIDO)
   socket.on("sairFila", (nome) => {
 
+    const nomeNormalizado = nome.trim().toLowerCase();
+
     fila = fila.filter(a =>
-      a.nome.toLowerCase().trim() !== nome.toLowerCase().trim()
+      a.nome.toLowerCase() !== nomeNormalizado &&
+      !a.nome.toLowerCase().startsWith(nomeNormalizado)
     );
 
     io.emit("filaAtualizada", fila);
   });
 
+  // PRÓXIMO
   socket.on("proximoAluno", () => {
     if (fila.length > 0) {
-      io.emit("filaAtualizada", fila);
       io.emit("vezAluno", fila[0].nome);
     }
   });
 
+  // VOLTOU
   socket.on("alunoVoltou", () => {
 
     if (fila.length > 0) {
@@ -130,10 +104,6 @@ io.on("connection", (socket) => {
       cooldowns[alunoAtual.nome] =
         Date.now() + (50 * 60 * 1000);
 
-      if (fila.length > 0) {
-        fila[0].inicioBanheiro = Date.now();
-      }
-
       io.emit("contadorAtualizado", contadorBanheiro);
       io.emit("cooldownsAtualizados", cooldowns);
       io.emit("filaAtualizada", fila);
@@ -143,7 +113,6 @@ io.on("connection", (socket) => {
       }
     }
   });
-
 });
 
 const PORT = process.env.PORT || 3000;

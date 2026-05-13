@@ -21,7 +21,7 @@ function entrarFila(){
 
   localStorage.setItem("nome", nome);
 
-  socket.emit("entrarFila", nome);
+ socket.emit("entrarFila", nome.trim());
 
 }
 
@@ -31,12 +31,13 @@ function sairFila(){
   const nome = nomeInput.value.trim();
 
   if(!nome){
-    alert("Digite seu nome primeiro");
+    alert("Digite seu nome");
     return;
   }
 
   socket.emit("sairFila", nome);
 
+  statusDiv.innerHTML = "Você saiu da fila";
   popupDiv.innerHTML = "";
 }
 
