@@ -6,18 +6,13 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
+const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.json({
-    status: "online",
-    message: "Backend da fila funcionando 🚀"
-  });
+  res.json({ status: "online", message: "Backend da fila funcionando 🚀" });
 });
 
 let fila = [];
@@ -55,46 +50,47 @@ const alunos = [
   "Yuri Vieira Nogueira"
 ];
 
-function norm(texto) {
-  return texto
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim();
+// Normaliza o nome (remove acentos e caixa)
+function norm(str) {
+  return str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 io.on("connection", (socket) => {
 
+  // envia estado inicial
   socket.emit("filaAtualizada", fila);
   socket.emit("cooldownsAtualizados", cooldowns);
-  socket.emit("contadorAtualizado", historico);
 
   // ENTRAR NA FILA
   socket.on("entrarFila", (nome) => {
-
     const input = norm(nome);
-
-    const aluno = alunos.find(a => {
-      const n = norm(a);
-      return n === input || n.startsWith(input);
-    });
+    const aluno = alunos.find(a => norm(a).startsWith(input));
 
     if (!aluno) {
       socket.emit("erroNome", "Nome incorreto");
       return;
     }
 
-    const jaExiste = fila.some(f => norm(f.nome) === norm(aluno));
-
-    if (jaExiste) {
+    // Verifica se já está na fila
+    if (fila.find(f => f.nome === aluno)) {
       socket.emit("erroNome", "Já está na fila");
       return;
     }
 
+    // Verifica cooldown
+    if (cooldowns[aluno] && Date.now() < cooldowns[aluno]) {
+      const minutos = Math.ceil((cooldowns[aluno] - Date.now()) / 60000);
+      socket.emit("erroNome", `Espere ${minutos} minutos antes de entrar novamente`);
+      return;
+    }
+
+    // Mantém timer do primeiro aluno
+    const inicioPrimeiro = fila[0]?.inicio || Date.now();
+
     fila.push({
       nome: aluno,
       entrada: Date.now(),
-      inicio: fila.length === 0 ? Date.now() : fila[0].inicio // mantém o tempo do primeiro aluno
+      inicio: fila.length === 0 ? Date.now() : inicioPrimeiro
     });
 
     io.emit("filaAtualizada", fila);
@@ -103,55 +99,52 @@ io.on("connection", (socket) => {
   // SAIR DA FILA
   socket.on("sairFila", (nome) => {
     const input = norm(nome);
+    fila = fila.filter(f => !norm(f.nome).startsWith(input));
 
-    const antes = fila.length;
+    // Atualiza timer do primeiro aluno se necessário
+    if (fila[0] && !fila[0].inicio) fila[0].inicio = Date.now();
 
-    fila = fila.filter(f =>
-      norm(f.nome) !== input &&
-      !norm(f.nome).startsWith(input)
-    );
-
-    // garante que o inicio do primeiro aluno permaneça
-    if (fila.length > 0 && !fila[0].inicio) {
-      fila[0].inicio = Date.now();
-    }
-
-    if (fila.length !== antes) {
-      io.emit("filaAtualizada", fila);
-    }
+    io.emit("filaAtualizada", fila);
   });
 
-  // PRÓXIMO ALUNO
+  // AVISAR PRÓXIMO
   socket.on("proximoAluno", () => {
     if (fila.length === 0) return;
-
     io.emit("vezAluno", fila[0].nome);
     io.emit("mostrarPopup", fila[0].nome);
   });
 
   // ALUNO VOLTOU
   socket.on("alunoVoltou", () => {
-
     if (fila.length === 0) return;
 
     const aluno = fila.shift();
-
     historico[aluno.nome] = (historico[aluno.nome] || 0) + 1;
+
+    // Define cooldown de 50 min
     cooldowns[aluno.nome] = Date.now() + 50 * 60 * 1000;
 
-    // mantém o inicio do próximo aluno
-    if (fila.length > 0 && !fila[0].inicio) {
-      fila[0].inicio = Date.now();
-    }
+    // Mantém timer do próximo aluno
+    if (fila[0] && !fila[0].inicio) fila[0].inicio = Date.now();
 
     io.emit("filaAtualizada", fila);
     io.emit("cooldownsAtualizados", cooldowns);
-    io.emit("contadorAtualizado", historico);
+  });
+
+  // MOVER ALUNO PARA FRENTE (professor)
+  socket.on("moverParaFrente", (nomeAluno) => {
+    const index = fila.findIndex(f => norm(f.nome) === norm(nomeAluno));
+    if(index <= 0) return; // já está na frente ou não existe
+    const [aluno] = fila.splice(index,1);
+    fila.unshift(aluno);
+
+    // Atualiza timer do primeiro aluno
+    fila[0].inicio = fila[0].inicio || Date.now();
+
+    io.emit("filaAtualizada", fila);
   });
 
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, "0.0.0.0", () => {
-  console.log("Servidor rodando na porta " + PORT);
-});
+server.listen(PORT, "0.0.0.0", () => console.log("Servidor rodando na porta " + PORT));
