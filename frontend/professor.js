@@ -1,4 +1,6 @@
-const socket = io();
+const socket = io(
+  "https://fila-banheiro-production.up.railway.app"
+);
 
 const alunos = [
   "Ana Beatriz Dos Santos Nascimento",
