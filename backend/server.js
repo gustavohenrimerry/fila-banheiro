@@ -25,7 +25,7 @@ let historico = [];
 const cooldowns = {};
 const contadorBanheiro = {};
 
-// 🔵 MANTÉM SUA LISTA ORIGINAL (NÃO ALTEREI NADA)
+/* 🔥 SUA LISTA (NÃO ALTEREI) */
 const alunos = [
   "Ana Beatriz Dos Santos Nascimento",
   "Ana Luisa Tosi Baldino",
@@ -57,28 +57,34 @@ const alunos = [
   "Yuri Vieira Nogueira"
 ];
 
+/* 🔥 NORMALIZAÇÃO (RESOLVE GUSTAVO / GUSTAVO / GUSTAVO) */
+function normalizar(texto) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 io.on("connection", (socket) => {
 
   socket.emit("filaAtualizada", fila);
   socket.emit("contadorAtualizado", contadorBanheiro);
   socket.emit("cooldownsAtualizados", cooldowns);
 
-  // ENTRAR NA FILA (CORRIGIDO MATCH)
+  /* =========================
+     ENTRAR NA FILA (CORRIGIDO)
+  ========================= */
   socket.on("entrarFila", (nome) => {
 
-    const nomeDigitado = nome.trim().toLowerCase();
+    const input = normalizar(nome.trim());
 
-    // 🔥 CORREÇÃO IMPORTANTE: match único e seguro
-    const matches = alunos.filter(a =>
-      a.toLowerCase().includes(nomeDigitado)
+    const alunoCompleto = alunos.find(a =>
+      normalizar(a) === input ||
+      normalizar(a).startsWith(input)
     );
 
-    let alunoCompleto;
-
-    if (matches.length === 1) {
-      alunoCompleto = matches[0];
-    } else {
-      socket.emit("erroNome", "Nome inválido ou ambíguo");
+    if (!alunoCompleto) {
+      socket.emit("erroNome", "Nome incorreto");
       return;
     }
 
@@ -92,60 +98,72 @@ io.on("connection", (socket) => {
     fila.push({
       nome: alunoCompleto,
       status: "Na fila",
-      entrada: new Date(),
+      entrada: Date.now(),
       inicioBanheiro: fila.length === 0 ? Date.now() : null
     });
 
-    io.emit("filaAtualizada", fila);
+    io.emit("filaAtualizada", [...fila]);
   });
 
-  // SAIR DA FILA (CORRIGIDO DEFINITIVO)
+  /* =========================
+     SAIR DA FILA (CORRIGIDO)
+  ========================= */
   socket.on("sairFila", (nome) => {
 
-    const nomeNormalizado = nome.trim().toLowerCase();
+    const input = normalizar(nome.trim());
 
     fila = fila.filter(a =>
-      a.nome.toLowerCase() !== nomeNormalizado
+      normalizar(a.nome) !== input &&
+      !normalizar(a.nome).startsWith(input)
     );
 
-    io.emit("filaAtualizada", fila);
+    io.emit("filaAtualizada", [...fila]);
   });
 
-  // PRÓXIMO ALUNO
+  /* =========================
+     PRÓXIMO ALUNO
+  ========================= */
   socket.on("proximoAluno", () => {
     if (fila.length > 0) {
       io.emit("vezAluno", fila[0].nome);
+      io.emit("mostrarPopup", fila[0].nome);
     }
   });
 
-  // ALUNO VOLTOU
+  /* =========================
+     ALUNO VOLTOU
+  ========================= */
   socket.on("alunoVoltou", () => {
 
+    if (fila.length === 0) return;
+
+    const alunoAtual = fila.shift();
+
+    historico.push({
+      nome: alunoAtual.nome,
+      entrada: alunoAtual.entrada,
+      saida: Date.now()
+    });
+
+    contadorBanheiro[alunoAtual.nome] =
+      (contadorBanheiro[alunoAtual.nome] || 0) + 1;
+
+    cooldowns[alunoAtual.nome] =
+      Date.now() + (50 * 60 * 1000);
+
     if (fila.length > 0) {
+      fila[0].inicioBanheiro = Date.now();
+    }
 
-      const alunoAtual = fila.shift();
+    io.emit("contadorAtualizado", contadorBanheiro);
+    io.emit("cooldownsAtualizados", cooldowns);
+    io.emit("filaAtualizada", [...fila]);
 
-      historico.push({
-        nome: alunoAtual.nome,
-        entrada: alunoAtual.entrada,
-        saida: new Date()
-      });
-
-      contadorBanheiro[alunoAtual.nome] =
-        (contadorBanheiro[alunoAtual.nome] || 0) + 1;
-
-      cooldowns[alunoAtual.nome] =
-        Date.now() + (50 * 60 * 1000);
-
-      io.emit("contadorAtualizado", contadorBanheiro);
-      io.emit("cooldownsAtualizados", cooldowns);
-      io.emit("filaAtualizada", fila);
-
-      if (fila.length > 0) {
-        io.emit("mostrarPopup", fila[0].nome);
-      }
+    if (fila.length > 0) {
+      io.emit("mostrarPopup", fila[0].nome);
     }
   });
+
 });
 
 const PORT = process.env.PORT || 3000;
