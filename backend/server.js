@@ -8,17 +8,12 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: "*"
   }
 });
 
 app.use(cors());
 app.use(express.json());
-
-/* =========================
-   ROTA PRINCIPAL
-========================= */
 
 app.get("/", (req, res) => {
   res.json({
@@ -26,10 +21,6 @@ app.get("/", (req, res) => {
     message: "Backend da fila funcionando 🚀"
   });
 });
-
-/* =========================
-   DADOS DO SISTEMA
-========================= */
 
 let fila = [];
 let historico = [];
@@ -68,10 +59,6 @@ const alunos = [
   "Yuri Vieira Nogueira"
 ];
 
-/* =========================
-   SOCKET.IO
-========================= */
-
 io.on("connection", (socket) => {
 
   socket.emit("filaAtualizada", fila);
@@ -83,12 +70,7 @@ io.on("connection", (socket) => {
     const nomeDigitado = nome.trim().toLowerCase();
 
     const alunoCompleto = alunos.find(aluno => {
-      const nomeLower = aluno.toLowerCase();
-
-      return (
-        nomeLower === nomeDigitado ||
-        nomeLower.startsWith(nomeDigitado + " ")
-      );
+      return aluno.toLowerCase().startsWith(nomeDigitado);
     });
 
     if (!alunoCompleto) {
@@ -103,22 +85,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    if (cooldowns[alunoCompleto]) {
-      const agora = Date.now();
-      const fimCooldown = cooldowns[alunoCompleto];
-
-      if (agora < fimCooldown) {
-        const minutos = Math.ceil((fimCooldown - agora) / 60000);
-
-        socket.emit(
-          "erroNome",
-          `Espere ${minutos} minutos para ir ao banheiro novamente`
-        );
-
-        return;
-      }
-    }
-
     fila.push({
       nome: alunoCompleto,
       status: "Na fila",
@@ -126,22 +92,28 @@ io.on("connection", (socket) => {
       inicioBanheiro: fila.length === 0 ? Date.now() : null
     });
 
-    io.emit("filaAtualizada", [...fila]);
+    io.emit("filaAtualizada", fila);
   });
 
+  // ✔️ CORRIGIDO AQUI
   socket.on("sairFila", (nome) => {
-    fila = fila.filter(a => a.nome !== nome);
-    io.emit("filaAtualizada", [...fila]);
+
+    fila = fila.filter(a =>
+      a.nome.toLowerCase().trim() !== nome.toLowerCase().trim()
+    );
+
+    io.emit("filaAtualizada", fila);
   });
 
   socket.on("proximoAluno", () => {
     if (fila.length > 0) {
-      io.emit("filaAtualizada", [...fila]);
+      io.emit("filaAtualizada", fila);
       io.emit("vezAluno", fila[0].nome);
     }
   });
 
   socket.on("alunoVoltou", () => {
+
     if (fila.length > 0) {
 
       const alunoAtual = fila.shift();
@@ -164,33 +136,18 @@ io.on("connection", (socket) => {
 
       io.emit("contadorAtualizado", contadorBanheiro);
       io.emit("cooldownsAtualizados", cooldowns);
-      io.emit("filaAtualizada", [...fila]);
+      io.emit("filaAtualizada", fila);
 
       if (fila.length > 0) {
         io.emit("mostrarPopup", fila[0].nome);
       }
     }
   });
-});
 
-/* =========================
-   RAILWAY START
-========================= */
+});
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
-
-/* =========================
-   ERROS GLOBAIS (SEGURANÇA)
-========================= */
-
-process.on("uncaughtException", (err) => {
-  console.log("Erro não tratado:", err);
-});
-
-process.on("unhandledRejection", (err) => {
-  console.log("Promise rejeitada:", err);
+  console.log("Servidor rodando na porta " + PORT);
 });
