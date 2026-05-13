@@ -1,5 +1,3 @@
-// TROQUE TODO O backend/server.js POR ESTE
-
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
