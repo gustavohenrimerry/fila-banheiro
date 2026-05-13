@@ -55,7 +55,6 @@ const alunos = [
   "Yuri Vieira Nogueira"
 ];
 
-// normalização forte (resolve GUSTAVO / Gustavo / gustavo / acento)
 function norm(texto) {
   return texto
     .toLowerCase()
@@ -70,9 +69,7 @@ io.on("connection", (socket) => {
   socket.emit("cooldownsAtualizados", cooldowns);
   socket.emit("contadorAtualizado", historico);
 
-  /* =========================
-     ENTRAR NA FILA (SEM RESET)
-  ========================= */
+  // ENTRAR NA FILA
   socket.on("entrarFila", (nome) => {
 
     const input = norm(nome);
@@ -96,17 +93,15 @@ io.on("connection", (socket) => {
 
     fila.push({
       nome: aluno,
-      entrada: Date.now()
+      entrada: Date.now(),
+      inicio: fila.length === 0 ? Date.now() : fila[0].inicio // mantém o tempo do primeiro aluno
     });
 
     io.emit("filaAtualizada", fila);
   });
 
-  /* =========================
-     SAIR DA FILA
-  ========================= */
+  // SAIR DA FILA
   socket.on("sairFila", (nome) => {
-
     const input = norm(nome);
 
     const antes = fila.length;
@@ -116,14 +111,17 @@ io.on("connection", (socket) => {
       !norm(f.nome).startsWith(input)
     );
 
+    // garante que o inicio do primeiro aluno permaneça
+    if (fila.length > 0 && !fila[0].inicio) {
+      fila[0].inicio = Date.now();
+    }
+
     if (fila.length !== antes) {
       io.emit("filaAtualizada", fila);
     }
   });
 
-  /* =========================
-     PRÓXIMO ALUNO
-  ========================= */
+  // PRÓXIMO ALUNO
   socket.on("proximoAluno", () => {
     if (fila.length === 0) return;
 
@@ -131,9 +129,7 @@ io.on("connection", (socket) => {
     io.emit("mostrarPopup", fila[0].nome);
   });
 
-  /* =========================
-     ALUNO VOLTOU
-  ========================= */
+  // ALUNO VOLTOU
   socket.on("alunoVoltou", () => {
 
     if (fila.length === 0) return;
@@ -141,8 +137,12 @@ io.on("connection", (socket) => {
     const aluno = fila.shift();
 
     historico[aluno.nome] = (historico[aluno.nome] || 0) + 1;
-
     cooldowns[aluno.nome] = Date.now() + 50 * 60 * 1000;
+
+    // mantém o inicio do próximo aluno
+    if (fila.length > 0 && !fila[0].inicio) {
+      fila[0].inicio = Date.now();
+    }
 
     io.emit("filaAtualizada", fila);
     io.emit("cooldownsAtualizados", cooldowns);
@@ -152,7 +152,6 @@ io.on("connection", (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
 server.listen(PORT, "0.0.0.0", () => {
   console.log("Servidor rodando na porta " + PORT);
 });
