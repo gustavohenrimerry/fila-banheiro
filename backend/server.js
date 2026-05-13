@@ -21,11 +21,9 @@ app.get("/", (req, res) => {
 });
 
 let fila = [];
-let historico = [];
+let historico = {};
 const cooldowns = {};
-const contadorBanheiro = {};
 
-/* 🔥 SUA LISTA (NÃO ALTEREI) */
 const alunos = [
   "Ana Beatriz Dos Santos Nascimento",
   "Ana Luisa Tosi Baldino",
@@ -57,9 +55,8 @@ const alunos = [
   "Yuri Vieira Nogueira"
 ];
 
-/* 🔥 NORMALIZAÇÃO (RESOLVE GUSTAVO / GUSTAVO / GUSTAVO) */
-function normalizar(texto) {
-  return texto
+function norm(t) {
+  return t
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
@@ -68,61 +65,49 @@ function normalizar(texto) {
 io.on("connection", (socket) => {
 
   socket.emit("filaAtualizada", fila);
-  socket.emit("contadorAtualizado", contadorBanheiro);
   socket.emit("cooldownsAtualizados", cooldowns);
 
-  /* =========================
-     ENTRAR NA FILA (CORRIGIDO)
-  ========================= */
+  // ENTRAR
   socket.on("entrarFila", (nome) => {
 
-    const input = normalizar(nome.trim());
+    const input = norm(nome.trim());
 
-    const alunoCompleto = alunos.find(a =>
-      normalizar(a) === input ||
-      normalizar(a).startsWith(input)
+    const aluno = alunos.find(a =>
+      norm(a).includes(input)
     );
 
-    if (!alunoCompleto) {
+    if (!aluno) {
       socket.emit("erroNome", "Nome incorreto");
       return;
     }
 
-    const existe = fila.find(a => a.nome === alunoCompleto);
-
-    if (existe) {
-      socket.emit("erroNome", "Você já está na fila");
+    if (fila.find(f => f.nome === aluno)) {
+      socket.emit("erroNome", "Já está na fila");
       return;
     }
 
     fila.push({
-      nome: alunoCompleto,
-      status: "Na fila",
+      nome: aluno,
       entrada: Date.now(),
-      inicioBanheiro: fila.length === 0 ? Date.now() : null
+      inicio: fila.length === 0 ? Date.now() : null
     });
 
-    io.emit("filaAtualizada", [...fila]);
+    io.emit("filaAtualizada", fila);
   });
 
-  /* =========================
-     SAIR DA FILA (CORRIGIDO)
-  ========================= */
+  // SAIR
   socket.on("sairFila", (nome) => {
 
-    const input = normalizar(nome.trim());
+    const input = norm(nome.trim());
 
-    fila = fila.filter(a =>
-      normalizar(a.nome) !== input &&
-      !normalizar(a.nome).startsWith(input)
+    fila = fila.filter(f =>
+      !norm(f.nome).includes(input)
     );
 
-    io.emit("filaAtualizada", [...fila]);
+    io.emit("filaAtualizada", fila);
   });
 
-  /* =========================
-     PRÓXIMO ALUNO
-  ========================= */
+  // PROXIMO
   socket.on("proximoAluno", () => {
     if (fila.length > 0) {
       io.emit("vezAluno", fila[0].nome);
@@ -130,38 +115,19 @@ io.on("connection", (socket) => {
     }
   });
 
-  /* =========================
-     ALUNO VOLTOU
-  ========================= */
+  // VOLTOU
   socket.on("alunoVoltou", () => {
 
     if (fila.length === 0) return;
 
-    const alunoAtual = fila.shift();
+    const aluno = fila.shift();
 
-    historico.push({
-      nome: alunoAtual.nome,
-      entrada: alunoAtual.entrada,
-      saida: Date.now()
-    });
+    historico[aluno.nome] = (historico[aluno.nome] || 0) + 1;
 
-    contadorBanheiro[alunoAtual.nome] =
-      (contadorBanheiro[alunoAtual.nome] || 0) + 1;
+    cooldowns[aluno.nome] = Date.now() + 50 * 60 * 1000;
 
-    cooldowns[alunoAtual.nome] =
-      Date.now() + (50 * 60 * 1000);
-
-    if (fila.length > 0) {
-      fila[0].inicioBanheiro = Date.now();
-    }
-
-    io.emit("contadorAtualizado", contadorBanheiro);
+    io.emit("filaAtualizada", fila);
     io.emit("cooldownsAtualizados", cooldowns);
-    io.emit("filaAtualizada", [...fila]);
-
-    if (fila.length > 0) {
-      io.emit("mostrarPopup", fila[0].nome);
-    }
   });
 
 });

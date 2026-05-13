@@ -50,7 +50,7 @@ socket.on("filaAtualizada", (fila)=>{
   const nome = nomeInput.value;
 
   const aluno = fila.find(a =>
-    a.nome.toLowerCase().trim() === nome.toLowerCase().trim()
+  a.nome.toLowerCase().includes(nome.toLowerCase())
   );
 
   const posicao = fila.findIndex(a =>
