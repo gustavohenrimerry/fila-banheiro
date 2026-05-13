@@ -55,11 +55,13 @@ const alunos = [
   "Yuri Vieira Nogueira"
 ];
 
-function norm(t) {
-  return t
+// normalização forte (resolve GUSTAVO / Gustavo / gustavo / acento)
+function norm(texto) {
+  return texto
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
 }
 
 io.on("connection", (socket) => {
@@ -67,21 +69,26 @@ io.on("connection", (socket) => {
   socket.emit("filaAtualizada", fila);
   socket.emit("cooldownsAtualizados", cooldowns);
 
-  // ENTRAR
+  /* =========================
+     ENTRAR NA FILA (CORRIGIDO)
+  ========================= */
   socket.on("entrarFila", (nome) => {
 
-    const input = norm(nome.trim());
+    const input = norm(nome);
 
-    const aluno = alunos.find(a =>
-      norm(a).includes(input)
-    );
+    const aluno = alunos.find(a => {
+      const n = norm(a);
+      return n === input || n.startsWith(input);
+    });
 
     if (!aluno) {
       socket.emit("erroNome", "Nome incorreto");
       return;
     }
 
-    if (fila.find(f => f.nome === aluno)) {
+    const jaExiste = fila.some(f => norm(f.nome) === norm(aluno));
+
+    if (jaExiste) {
       socket.emit("erroNome", "Já está na fila");
       return;
     }
@@ -95,27 +102,38 @@ io.on("connection", (socket) => {
     io.emit("filaAtualizada", fila);
   });
 
-  // SAIR
+  /* =========================
+     SAIR DA FILA (CORRIGIDO)
+  ========================= */
   socket.on("sairFila", (nome) => {
 
-    const input = norm(nome.trim());
+    const input = norm(nome);
+
+    const antes = fila.length;
 
     fila = fila.filter(f =>
-      !norm(f.nome).includes(input)
+      norm(f.nome) !== input &&
+      !norm(f.nome).startsWith(input)
     );
 
-    io.emit("filaAtualizada", fila);
-  });
-
-  // PROXIMO
-  socket.on("proximoAluno", () => {
-    if (fila.length > 0) {
-      io.emit("vezAluno", fila[0].nome);
-      io.emit("mostrarPopup", fila[0].nome);
+    if (fila.length !== antes) {
+      io.emit("filaAtualizada", fila);
     }
   });
 
-  // VOLTOU
+  /* =========================
+     PRÓXIMO ALUNO
+  ========================= */
+  socket.on("proximoAluno", () => {
+    if (fila.length === 0) return;
+
+    io.emit("vezAluno", fila[0].nome);
+    io.emit("mostrarPopup", fila[0].nome);
+  });
+
+  /* =========================
+     ALUNO VOLTOU
+  ========================= */
   socket.on("alunoVoltou", () => {
 
     if (fila.length === 0) return;
@@ -126,8 +144,13 @@ io.on("connection", (socket) => {
 
     cooldowns[aluno.nome] = Date.now() + 50 * 60 * 1000;
 
+    if (fila.length > 0) {
+      fila[0].inicio = Date.now();
+    }
+
     io.emit("filaAtualizada", fila);
     io.emit("cooldownsAtualizados", cooldowns);
+    io.emit("contadorAtualizado", historico);
   });
 
 });
