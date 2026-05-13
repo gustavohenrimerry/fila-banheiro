@@ -1,4 +1,6 @@
-const socket = io();
+const socket = io(
+  "https://fila-banheiro-production.up.railway.app"
+);
 
 const nomeInput = document.getElementById("nome");
 const statusDiv = document.getElementById("status");
