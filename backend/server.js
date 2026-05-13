@@ -1,11 +1,9 @@
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
-const path = require("path");
 const { Server } = require("socket.io");
 
 const app = express();
-
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -16,13 +14,21 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+
+/* =========================
+   ROTA PRINCIPAL (FIX)
+========================= */
+
 app.get("/", (req, res) => {
-
-  res.send(
-    "Backend da fila funcionando!"
-  );
-
+  res.json({
+    status: "online",
+    message: "Backend da fila funcionando 🚀"
+  });
 });
+
+/* =========================
+   DADOS DO SISTEMA
+========================= */
 
 let fila = [];
 let historico = [];
@@ -61,96 +67,48 @@ const alunos = [
   "Yuri Vieira Nogueira"
 ];
 
+/* =========================
+   SOCKET.IO
+========================= */
+
 io.on("connection", (socket) => {
 
-  socket.emit(
-    "filaAtualizada",
-    fila
-  );
+  socket.emit("filaAtualizada", fila);
+  socket.emit("contadorAtualizado", contadorBanheiro);
+  socket.emit("cooldownsAtualizados", cooldowns);
 
-  socket.emit(
-    "contadorAtualizado",
-    contadorBanheiro
-  );
-
-  socket.emit(
-    "cooldownsAtualizados",
-    cooldowns
-  );
-
-  // ENTRAR FILA
-
+  // ENTRAR NA FILA
   socket.on("entrarFila", (nome) => {
 
-    const nomeDigitado =
-      nome
-      .trim()
-      .toLowerCase();
+    const nomeDigitado = nome.trim().toLowerCase();
 
-    const alunoCompleto =
-      alunos.find(aluno => {
+    const alunoCompleto = alunos.find(aluno => {
+      const nomeLower = aluno.toLowerCase();
 
-        const nomeLower =
-          aluno.toLowerCase();
-
-        return (
-          nomeLower === nomeDigitado
-          ||
-          nomeLower.startsWith(
-            nomeDigitado + " "
-          )
-        );
-
-      });
-
-    // NOME ERRADO
-
-    if(!alunoCompleto){
-
-      socket.emit(
-        "erroNome",
-        "Nome Incorreto"
+      return (
+        nomeLower === nomeDigitado ||
+        nomeLower.startsWith(nomeDigitado + " ")
       );
+    });
 
+    if (!alunoCompleto) {
+      socket.emit("erroNome", "Nome Incorreto");
       return;
-
     }
 
-    // JÁ ESTÁ FILA
+    const existe = fila.find(a => a.nome === alunoCompleto);
 
-    const existe =
-      fila.find(
-        a => a.nome === alunoCompleto
-      );
-
-    if(existe){
-
-      socket.emit(
-        "erroNome",
-        "Você já está na fila"
-      );
-
+    if (existe) {
+      socket.emit("erroNome", "Você já está na fila");
       return;
-
     }
 
-    // COOLDOWN
+    if (cooldowns[alunoCompleto]) {
+      const agora = Date.now();
+      const fimCooldown = cooldowns[alunoCompleto];
 
-    if(cooldowns[alunoCompleto]){
-
-      const agora =
-        Date.now();
-
-      const fimCooldown =
-        cooldowns[alunoCompleto];
-
-      if(agora < fimCooldown){
-
-        const minutos =
-          Math.ceil(
-            (fimCooldown - agora)
-            / 60000
-          );
+      if (agora < fimCooldown) {
+        const minutos = Math.ceil((fimCooldown - agora) / 60000);
 
         socket.emit(
           "erroNome",
@@ -158,180 +116,72 @@ io.on("connection", (socket) => {
         );
 
         return;
-
       }
-
     }
 
-    // ENTRAR FILA
-
     fila.push({
-
       nome: alunoCompleto,
       status: "Na fila",
       entrada: new Date(),
-
-      // TIMER COMEÇA AUTOMÁTICO
-
-      inicioBanheiro:
-        fila.length === 0
-        ? Date.now()
-        : null
-
+      inicioBanheiro: fila.length === 0 ? Date.now() : null
     });
 
-    io.emit(
-      "filaAtualizada",
-      [...fila]
-    );
-
+    io.emit("filaAtualizada", [...fila]);
   });
 
-  // SAIR FILA
-
+  // SAIR DA FILA
   socket.on("sairFila", (nome) => {
-
-    fila =
-      fila.filter(
-        a => a.nome !== nome
-      );
-
-    io.emit(
-      "filaAtualizada",
-      [...fila]
-    );
-
+    fila = fila.filter(a => a.nome !== nome);
+    io.emit("filaAtualizada", [...fila]);
   });
 
-  // AVISAR ALUNO
-
+  // PRÓXIMO ALUNO
   socket.on("proximoAluno", () => {
-
-    if(fila.length > 0){
-
-      io.emit(
-        "filaAtualizada",
-        [...fila]
-      );
-
-      io.emit(
-        "vezAluno",
-        fila[0].nome
-      );
-
+    if (fila.length > 0) {
+      io.emit("filaAtualizada", [...fila]);
+      io.emit("vezAluno", fila[0].nome);
     }
-
   });
 
   // ALUNO VOLTOU
-
   socket.on("alunoVoltou", () => {
+    if (fila.length > 0) {
 
-    if(fila.length > 0){
-
-      const alunoAtual =
-        fila.shift();
-
-      // HISTÓRICO
+      const alunoAtual = fila.shift();
 
       historico.push({
-
         nome: alunoAtual.nome,
         entrada: alunoAtual.entrada,
         saida: new Date()
-
       });
 
-      // CONTADOR
+      contadorBanheiro[alunoAtual.nome] =
+        (contadorBanheiro[alunoAtual.nome] || 0) + 1;
 
-      contadorBanheiro[
-        alunoAtual.nome
-      ] =
-        (
-          contadorBanheiro[
-            alunoAtual.nome
-          ] || 0
-        ) + 1;
+      cooldowns[alunoAtual.nome] =
+        Date.now() + (50 * 60 * 1000);
 
-      // COOLDOWN
-
-      cooldowns[
-        alunoAtual.nome
-      ] =
-        Date.now()
-        +
-        (50 * 60 * 1000);
-
-      // NOVO PRIMEIRO
-      // COMEÇA TIMER
-
-      if(fila.length > 0){
-
-        fila[0].inicioBanheiro =
-          Date.now();
-
+      if (fila.length > 0) {
+        fila[0].inicioBanheiro = Date.now();
       }
 
-      io.emit(
-        "contadorAtualizado",
-        contadorBanheiro
-      );
+      io.emit("contadorAtualizado", contadorBanheiro);
+      io.emit("cooldownsAtualizados", cooldowns);
+      io.emit("filaAtualizada", [...fila]);
 
-      io.emit(
-        "cooldownsAtualizados",
-        cooldowns
-      );
-
-      io.emit(
-        "filaAtualizada",
-        [...fila]
-      );
-
-      // POPUP
-
-      if(fila.length > 0){
-
-        io.emit(
-          "mostrarPopup",
-          fila[0].nome
-        );
-
+      if (fila.length > 0) {
+        io.emit("mostrarPopup", fila[0].nome);
       }
-
     }
-
   });
-
 });
 
-app.use(
-  express.static(
-    path.join(
-      __dirname,
-      "../frontend"
-    )
-  )
-);
+/* =========================
+   START SERVER (FIX RAILWAY)
+========================= */
 
-// ROTA PRINCIPAL
+const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-
-  res.send(
-    "Backend da fila funcionando!"
-  );
-
-});
-
-// PORTA
-
-const PORT =
-  process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-
-  console.log(
-    `Servidor rodando na porta ${PORT}`
-  );
-
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
