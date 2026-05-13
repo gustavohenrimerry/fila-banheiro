@@ -1,5 +1,5 @@
 const socket = io(
-  "https://fila-banheiro-production.up.railway.app"
+  "https://exciting-appreciation-fila-banheiro.up.railway.app/"
 );
 
 const alunos = [
