@@ -25,7 +25,37 @@ let historico = [];
 const cooldowns = {};
 const contadorBanheiro = {};
 
-const alunos = [/* mantém sua lista igual */];
+// 🔵 MANTÉM SUA LISTA ORIGINAL (NÃO ALTEREI NADA)
+const alunos = [
+  "Ana Beatriz Dos Santos Nascimento",
+  "Ana Luisa Tosi Baldino",
+  "Bruna Geovana Amaral Muniz",
+  "Fernanda Oliveira Santos",
+  "Gabrielle Da Costa Silva",
+  "Geovanna Felix Alves De Lima",
+  "Guilherme Nery Bernardino Da Luz",
+  "Gustavo Henrique Rodrigues Souza",
+  "Heliene Aquino Souza Barbosa",
+  "Isabelly Da Silva Nascimento",
+  "Jadilson Inacio Dos Santos",
+  "Jennifer Nascimento Santos",
+  "Joao Pedro Costa De Souza",
+  "Julia Kathelen Barbosa Batista Dos Santos",
+  "Julyanna Silva Do Nascimento",
+  "Keisy Rodrigues Do Nascimento",
+  "Leonardo De Deus Malinoski",
+  "Leticia Vitoria Barros Da Silva",
+  "Marcos Alexandre Da Silva Prado",
+  "Maria Eduarda De Oliveira Ribeiro",
+  "Moises Ferreira Soares",
+  "Pedro Henrique Reis Silva",
+  "Rebeca Keyzi Rodrigues Oliveira",
+  "Renan Da Silva Santos",
+  "Thiago Da Silva Araujo",
+  "Thiago Salomão Martins",
+  "Vinicius Inacio Portela Da Silva",
+  "Yuri Vieira Nogueira"
+];
 
 io.on("connection", (socket) => {
 
@@ -33,18 +63,22 @@ io.on("connection", (socket) => {
   socket.emit("contadorAtualizado", contadorBanheiro);
   socket.emit("cooldownsAtualizados", cooldowns);
 
-  // ENTRAR
+  // ENTRAR NA FILA (CORRIGIDO MATCH)
   socket.on("entrarFila", (nome) => {
 
     const nomeDigitado = nome.trim().toLowerCase();
 
-    const alunoCompleto = alunos.find(a =>
-      a.toLowerCase() === nomeDigitado ||
-      a.toLowerCase().startsWith(nomeDigitado)
+    // 🔥 CORREÇÃO IMPORTANTE: match único e seguro
+    const matches = alunos.filter(a =>
+      a.toLowerCase().includes(nomeDigitado)
     );
 
-    if (!alunoCompleto) {
-      socket.emit("erroNome", "Nome Incorreto");
+    let alunoCompleto;
+
+    if (matches.length === 1) {
+      alunoCompleto = matches[0];
+    } else {
+      socket.emit("erroNome", "Nome inválido ou ambíguo");
       return;
     }
 
@@ -65,27 +99,26 @@ io.on("connection", (socket) => {
     io.emit("filaAtualizada", fila);
   });
 
-  // SAIR (CORRIGIDO)
+  // SAIR DA FILA (CORRIGIDO DEFINITIVO)
   socket.on("sairFila", (nome) => {
 
     const nomeNormalizado = nome.trim().toLowerCase();
 
     fila = fila.filter(a =>
-      a.nome.toLowerCase() !== nomeNormalizado &&
-      !a.nome.toLowerCase().startsWith(nomeNormalizado)
+      a.nome.toLowerCase() !== nomeNormalizado
     );
 
     io.emit("filaAtualizada", fila);
   });
 
-  // PRÓXIMO
+  // PRÓXIMO ALUNO
   socket.on("proximoAluno", () => {
     if (fila.length > 0) {
       io.emit("vezAluno", fila[0].nome);
     }
   });
 
-  // VOLTOU
+  // ALUNO VOLTOU
   socket.on("alunoVoltou", () => {
 
     if (fila.length > 0) {
