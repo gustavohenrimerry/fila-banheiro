@@ -69,7 +69,10 @@ io.on("connection", (socket) => {
   socket.emit("cooldownsAtualizados", cooldowns);
   socket.emit("contadorAtualizado", historico);
 
-  // ENTRAR
+  /* =========================
+     ENTRAR FILA
+  ========================= */
+
   socket.on("entrarFila", (nome) => {
 
     const input = norm(nome);
@@ -119,7 +122,10 @@ io.on("connection", (socket) => {
 
   });
 
-  // SAIR
+  /* =========================
+     SAIR FILA
+  ========================= */
+
   socket.on("sairFila", (nome) => {
 
     const input = norm(nome);
@@ -132,7 +138,10 @@ io.on("connection", (socket) => {
 
   });
 
-  // AVISAR
+  /* =========================
+     AVISAR ALUNO
+  ========================= */
+
   socket.on("proximoAluno", () => {
 
     if (fila.length === 0) return;
@@ -146,7 +155,10 @@ io.on("connection", (socket) => {
 
   });
 
-  // VOLTOU
+  /* =========================
+     ALUNO VOLTOU
+  ========================= */
+
   socket.on("alunoVoltou", () => {
 
     if (fila.length === 0) return;
@@ -159,9 +171,23 @@ io.on("connection", (socket) => {
     cooldowns[aluno.nome] =
       Date.now() + (50 * 60 * 1000);
 
-    // REINICIA TIMER
+    // NOVO PRIMEIRO
     if (fila[0]) {
+
+      // REINICIA TIMER
       fila[0].inicio = Date.now();
+
+      // AVISA NOVO PRIMEIRO
+      io.emit(
+        "vezAluno",
+        fila[0].nome
+      );
+
+      io.emit(
+        "mostrarPopup",
+        fila[0].nome
+      );
+
     }
 
     io.emit("filaAtualizada", fila);
@@ -170,7 +196,10 @@ io.on("connection", (socket) => {
 
   });
 
-  // MOVER CIMA
+  /* =========================
+     MOVER CIMA
+  ========================= */
+
   socket.on("moverCima", (nomeAluno) => {
 
     const index = fila.findIndex(f =>
@@ -185,14 +214,31 @@ io.on("connection", (socket) => {
 
     // SE VIROU PRIMEIRO
     if (index - 1 === 0) {
+
+      // REINICIA TIMER
       fila[0].inicio = Date.now();
+
+      // MOSTRA POPUP
+      io.emit(
+        "vezAluno",
+        fila[0].nome
+      );
+
+      io.emit(
+        "mostrarPopup",
+        fila[0].nome
+      );
+
     }
 
     io.emit("filaAtualizada", fila);
 
   });
 
-  // MOVER BAIXO
+  /* =========================
+     MOVER BAIXO
+  ========================= */
+
   socket.on("moverBaixo", (nomeAluno) => {
 
     const index = fila.findIndex(f =>
@@ -218,7 +264,9 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, "0.0.0.0", () => {
+
   console.log(
     "Servidor rodando na porta " + PORT
   );
+
 });
