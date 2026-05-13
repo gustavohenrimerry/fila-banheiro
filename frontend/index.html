@@ -22,7 +22,7 @@
     Entre na fila virtual da sala
   </p>
 
-  <input id="nome" placeholder="Digite seu nome">
+  <input id="nome" placeholder="Digite seu nome" onkeydown="if(event.key==='Enter') entrarFila()">
 
   <button class="btn-entrar" onclick="entrarFila()">
     Entrar na fila

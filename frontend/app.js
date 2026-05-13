@@ -114,3 +114,8 @@ socket.on("mostrarPopup",(nome)=>{
   }
 
 });
+nomeInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    entrarFila();
+  }
+});
