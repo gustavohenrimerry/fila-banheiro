@@ -16,6 +16,13 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+app.get("/", (req, res) => {
+
+  res.send(
+    "Backend da fila funcionando!"
+  );
+
+});
 
 let fila = [];
 let historico = [];
