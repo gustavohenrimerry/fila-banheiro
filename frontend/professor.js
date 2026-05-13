@@ -34,420 +34,198 @@ const alunos = [
 ];
 
 let timerInterval = null;
-
 let cooldownsGlobais = {};
 
-// LOGIN
+/* =========================
+   LOGIN
+========================= */
 
-function login(){
+function login() {
+  const usuario = document.getElementById("usuario").value;
+  const senha = document.getElementById("senha").value;
 
-  const usuario =
-    document.getElementById("usuario").value;
-
-  const senha =
-    document.getElementById("senha").value;
-
-  if(
-    usuario === "heitor"
-    &&
-    senha === "sala10tec"
-  ){
-
-    document.getElementById("login")
-      .style.display = "none";
-
-    document.getElementById("painel")
-      .style.display = "block";
-
-  }else{
-
+  if (usuario === "heitor" && senha === "sala10tec") {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("painel").style.display = "block";
+  } else {
     alert("Login inválido");
-
   }
-
 }
 
-// MENU ALUNOS
+/* =========================
+   MENUS
+========================= */
 
-function abrirLista(){
-
-  const menu =
-    document.getElementById("menuAlunos");
-
-  if(
-    menu.style.display === "none"
-    ||
-    menu.style.display === ""
-  ){
-
-    menu.style.display = "block";
-
-  }else{
-
-    menu.style.display = "none";
-
-  }
-
-}
-function fecharLista(){
-
-  document.getElementById(
-    "menuAlunos"
-  ).style.display = "none";
-
+function abrirLista() {
+  const menu = document.getElementById("menuAlunos");
+  menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
-// MENU COOLDOWN
-
-function abrirCooldowns(){
-
-  const menu =
-    document.getElementById(
-      "cooldownLista"
-    );
-
-  if(
-    menu.style.display === "none"
-    ||
-    menu.style.display === ""
-  ){
-
-    menu.style.display = "block";
-
-  }else{
-
-    menu.style.display = "none";
-
-  }
-
+function fecharLista() {
+  document.getElementById("menuAlunos").style.display = "none";
 }
 
-// FILA
+function abrirCooldowns() {
+  const menu = document.getElementById("cooldownLista");
+  menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
 
-socket.on("filaAtualizada", (fila)=>{
+/* =========================
+   FILA
+========================= */
 
-  const contador =
-    document.getElementById("contador");
+socket.on("filaAtualizada", (fila) => {
 
-  contador.innerHTML =
-    `${fila.length} alunos`;
+  const contador = document.getElementById("contador");
+  const primeiro = document.getElementById("primeiro");
+  const filaDiv = document.getElementById("fila");
 
-  const primeiro =
-    document.getElementById("primeiro");
-
-  const filaDiv =
-    document.getElementById("fila");
-
+  contador.innerHTML = `${fila.length} alunos`;
   filaDiv.innerHTML = "";
 
   clearInterval(timerInterval);
 
-  // FILA VAZIA
-
-  if(fila.length <= 0){
-
+  if (fila.length <= 0) {
     primeiro.innerHTML = `
-
       <div class="primeiroAluno">
-
         <h2>Fila vazia</h2>
-
       </div>
-
     `;
-
     return;
-
   }
 
-  // PRIMEIRO ALUNO
+  const alunoAtual = fila[0];
 
   primeiro.innerHTML = `
-
     <div class="primeiroAluno">
-
       <h2>PRÓXIMO ALUNO</h2>
-
-      <h1>${fila[0].nome}</h1>
-
-      <div id="timer">
-        00:00
-      </div>
-
+      <h1>${alunoAtual.nome}</h1>
+      <div id="timer">00:00</div>
     </div>
-
   `;
 
-  // TIMER
+  /* =========================
+     TIMER CORRIGIDO (RESET REAL)
+  ========================= */
 
-  if(fila[0].inicioBanheiro){
+  let inicio = Date.now();
 
-    const inicio =
-      Number(fila[0].inicioBanheiro);
+  function atualizarTimer() {
+    const agora = Date.now();
+    const diff = agora - inicio;
 
-    function atualizarTimer(){
+    const total = Math.floor(diff / 1000);
+    const min = String(Math.floor(total / 60)).padStart(2, "0");
+    const sec = String(total % 60).padStart(2, "0");
 
-      const agora =
-        Date.now();
-
-      const diferenca =
-        agora - inicio;
-
-      const totalSegundos =
-        Math.floor(
-          diferenca / 1000
-        );
-
-      const minutos =
-        String(
-          Math.floor(
-            totalSegundos / 60
-          )
-        ).padStart(2,"0");
-
-      const segundos =
-        String(
-          totalSegundos % 60
-        ).padStart(2,"0");
-
-      const timer =
-        document.getElementById("timer");
-
-      if(timer){
-
-        timer.innerHTML =
-          `${minutos}:${segundos}`;
-
-      }
-
-    }
-
-    atualizarTimer();
-
-    timerInterval =
-      setInterval(
-        atualizarTimer,
-        1000
-      );
-
+    const timer = document.getElementById("timer");
+    if (timer) timer.innerHTML = `${min}:${sec}`;
   }
 
-  // RESTANTE FILA
+  atualizarTimer();
+  timerInterval = setInterval(atualizarTimer, 1000);
 
-  fila.slice(1).forEach((aluno,index)=>{
+  /* =========================
+     RESTO DA FILA
+========================= */
 
+  fila.slice(1).forEach((aluno, index) => {
     filaDiv.innerHTML += `
-
       <div class="aluno">
-
         <span>${aluno.nome}</span>
-
-        <div class="posicao">
-          ${index + 2}
-        </div>
-
+        <div class="posicao">${index + 2}</div>
       </div>
-
     `;
-
   });
-
 });
 
-// BOTÕES
+/* =========================
+   BOTÕES
+========================= */
 
-function proximoAluno(){
-
+function proximoAluno() {
   socket.emit("proximoAluno");
-
 }
 
-function alunoVoltou(){
-
+function alunoVoltou() {
   socket.emit("alunoVoltou");
-
 }
 
-// LISTA ALUNOS
+/* =========================
+   LISTA ALUNOS
+========================= */
 
-const listaAlunos =
-  document.getElementById(
-    "listaAlunos"
-  );
+const listaAlunos = document.getElementById("listaAlunos");
 
-function renderizarListaAlunos(){
-
+function renderizarListaAlunos() {
   listaAlunos.innerHTML = "";
 
-  alunos.forEach((aluno)=>{
-
+  alunos.forEach((aluno) => {
     listaAlunos.innerHTML += `
-
-      <div
-        class="aluno"
-        style="
-          padding:10px;
-          margin-bottom:8px;
-        "
-      >
-
-        <span
-          style="
-            font-size:13px;
-            width:80%;
-          "
-        >
-          ${aluno}
-        </span>
-
-        <button
-          onclick="adicionarAluno('${aluno}')"
-          style="
-            width:35px;
-            height:35px;
-            min-width:35px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            border:none;
-            border-radius:50%;
-            background:#5b3df5;
-            color:white;
-            font-size:24px;
-            cursor:pointer;
-            font-weight:bold;
-            padding:0;
-          "
-        >
+      <div class="aluno" style="padding:10px;margin-bottom:8px;">
+        <span style="font-size:13px;width:80%;">${aluno}</span>
+        <button onclick="adicionarAluno('${aluno}')"
+          style="width:35px;height:35px;border:none;border-radius:50%;
+          background:#5b3df5;color:white;font-size:24px;">
           +
         </button>
-
       </div>
-
     `;
-
   });
-
 }
 
 renderizarListaAlunos();
 
-function adicionarAluno(nome){
-
-  socket.emit(
-    "entrarFila",
-    nome
-  );
-
+function adicionarAluno(nome) {
+  socket.emit("entrarFila", nome);
 }
 
-// CONTADOR
+/* =========================
+   CONTADOR
+========================= */
 
-socket.on(
-  "contadorAtualizado",
-  (contador)=>{
-
-    const div =
-      document.getElementById(
-        "contadorBanheiro"
-      );
-
-    div.innerHTML = "";
-
-    alunos.forEach((aluno)=>{
-
-      div.innerHTML += `
-
-        <div class="aluno">
-
-          <span style="font-size:14px;">
-            ${aluno}
-          </span>
-
-          <div class="posicao">
-            ${contador[aluno] || 0}
-          </div>
-
-        </div>
-
-      `;
-
-    });
-
-});
-
-// RECEBER COOLDOWNS
-
-socket.on(
-  "cooldownsAtualizados",
-  (cooldowns)=>{
-
-    cooldownsGlobais =
-      cooldowns;
-
-  }
-);
-
-// TIMER GLOBAL COOLDOWN
-
-setInterval(()=>{
-
-  const div =
-    document.getElementById(
-      "cooldowns"
-    );
-
-  if(!div) return;
-
+socket.on("contadorAtualizado", (contador) => {
+  const div = document.getElementById("contadorBanheiro");
   div.innerHTML = "";
 
-  const agora =
-    Date.now();
+  alunos.forEach((aluno) => {
+    div.innerHTML += `
+      <div class="aluno">
+        <span style="font-size:14px;">${aluno}</span>
+        <div class="posicao">${contador[aluno] || 0}</div>
+      </div>
+    `;
+  });
+});
 
-  Object.keys(cooldownsGlobais)
-  .forEach((nome)=>{
+/* =========================
+   COOLDOWNS
+========================= */
 
-    const tempo =
-      cooldownsGlobais[nome]
-      - agora;
+socket.on("cooldownsAtualizados", (cooldowns) => {
+  cooldownsGlobais = cooldowns;
+});
 
-    if(tempo > 0){
+setInterval(() => {
+  const div = document.getElementById("cooldowns");
+  if (!div) return;
 
-      const minutos =
-        String(
-          Math.floor(
-            tempo / 60000
-          )
-        ).padStart(2,"0");
+  div.innerHTML = "";
+  const agora = Date.now();
 
-      const segundos =
-        String(
-          Math.floor(
-            (tempo % 60000)
-            / 1000
-          )
-        ).padStart(2,"0");
+  Object.keys(cooldownsGlobais).forEach((nome) => {
+    const tempo = cooldownsGlobais[nome] - agora;
+
+    if (tempo > 0) {
+      const min = String(Math.floor(tempo / 60000)).padStart(2, "0");
+      const sec = String(Math.floor((tempo % 60000) / 1000)).padStart(2, "0");
 
       div.innerHTML += `
-
         <div class="cooldownAluno">
-
-          <span>
-            ${nome}
-          </span>
-
-          <span class="cooldownTempo">
-
-            ${minutos}:${segundos}
-
-          </span>
-
+          <span>${nome}</span>
+          <span>${min}:${sec}</span>
         </div>
-
       `;
-
     }
-
   });
-
-},1000);
+}, 1000);
