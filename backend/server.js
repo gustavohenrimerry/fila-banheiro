@@ -8,7 +8,8 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*"
+    origin: "*",
+    methods: ["GET", "POST"]
   }
 });
 
@@ -16,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 /* =========================
-   ROTA PRINCIPAL (FIX)
+   ROTA PRINCIPAL
 ========================= */
 
 app.get("/", (req, res) => {
@@ -77,7 +78,6 @@ io.on("connection", (socket) => {
   socket.emit("contadorAtualizado", contadorBanheiro);
   socket.emit("cooldownsAtualizados", cooldowns);
 
-  // ENTRAR NA FILA
   socket.on("entrarFila", (nome) => {
 
     const nomeDigitado = nome.trim().toLowerCase();
@@ -129,13 +129,11 @@ io.on("connection", (socket) => {
     io.emit("filaAtualizada", [...fila]);
   });
 
-  // SAIR DA FILA
   socket.on("sairFila", (nome) => {
     fila = fila.filter(a => a.nome !== nome);
     io.emit("filaAtualizada", [...fila]);
   });
 
-  // PRÓXIMO ALUNO
   socket.on("proximoAluno", () => {
     if (fila.length > 0) {
       io.emit("filaAtualizada", [...fila]);
@@ -143,7 +141,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ALUNO VOLTOU
   socket.on("alunoVoltou", () => {
     if (fila.length > 0) {
 
@@ -177,11 +174,23 @@ io.on("connection", (socket) => {
 });
 
 /* =========================
-   START SERVER (FIX RAILWAY)
+   RAILWAY START
 ========================= */
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor rodando na porta ${PORT}`);
+});
+
+/* =========================
+   ERROS GLOBAIS (SEGURANÇA)
+========================= */
+
+process.on("uncaughtException", (err) => {
+  console.log("Erro não tratado:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.log("Promise rejeitada:", err);
 });
