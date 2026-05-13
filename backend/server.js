@@ -68,9 +68,10 @@ io.on("connection", (socket) => {
 
   socket.emit("filaAtualizada", fila);
   socket.emit("cooldownsAtualizados", cooldowns);
+  socket.emit("contadorAtualizado", historico);
 
   /* =========================
-     ENTRAR NA FILA (CORRIGIDO)
+     ENTRAR NA FILA (SEM RESET)
   ========================= */
   socket.on("entrarFila", (nome) => {
 
@@ -95,15 +96,14 @@ io.on("connection", (socket) => {
 
     fila.push({
       nome: aluno,
-      entrada: Date.now(),
-      inicio: fila.length === 0 ? Date.now() : null
+      entrada: Date.now()
     });
 
     io.emit("filaAtualizada", fila);
   });
 
   /* =========================
-     SAIR DA FILA (CORRIGIDO)
+     SAIR DA FILA
   ========================= */
   socket.on("sairFila", (nome) => {
 
@@ -143,10 +143,6 @@ io.on("connection", (socket) => {
     historico[aluno.nome] = (historico[aluno.nome] || 0) + 1;
 
     cooldowns[aluno.nome] = Date.now() + 50 * 60 * 1000;
-
-    if (fila.length > 0) {
-      fila[0].inicio = Date.now();
-    }
 
     io.emit("filaAtualizada", fila);
     io.emit("cooldownsAtualizados", cooldowns);
