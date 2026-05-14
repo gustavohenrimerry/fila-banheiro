@@ -34,27 +34,26 @@ const alunos = [
 let timerInterval = null;
 let cooldownsGlobais = {};
 let primeiroAtual = "";
-let usuarioAtual = "";
 
-/* LOGIN */
-let usuarioAtual = ""; // variável global do usuário logado
+/* =========================
+   LOGIN / LOGOUT
+========================= */
+let usuariosValidos = {
+  "heitor": "sala10tec",
+  "fernanda": "sala10port"
+};
 
 function login() {
-  const usuario = document.getElementById("usuario").value;
-  const senha = document.getElementById("senha").value;
+  const usuario = document.getElementById("usuario").value.trim();
+  const senha = document.getElementById("senha").value.trim();
 
-  if ((usuario === "heitor" && senha === "sala10tec") ||
-      (usuario === "fernanda" && senha === "sala10port")) {
-
+  if (usuariosValidos[usuario] && usuariosValidos[usuario] === senha) {
     usuarioAtual = usuario;
 
     document.getElementById("login").style.display = "none";
     document.getElementById("painel").style.display = "block";
-
-    // Mostra logout e usuário logado
     document.getElementById("logoutContainer").style.display = "flex";
     document.getElementById("usuarioLogado").innerText = `Usuário: ${usuarioAtual}`;
-
   } else {
     alert("Login inválido");
   }
@@ -65,13 +64,13 @@ function logout() {
   document.getElementById("login").style.display = "block";
   document.getElementById("painel").style.display = "none";
   document.getElementById("logoutContainer").style.display = "none";
-
-  // limpa inputs
   document.getElementById("usuario").value = "";
   document.getElementById("senha").value = "";
 }
 
-/* MENUS */
+/* =========================
+   MENUS
+========================= */
 function abrirLista() {
   const menu = document.getElementById("menuAlunos");
   menu.style.display = (menu.style.display === "block") ? "none" : "block";
@@ -82,7 +81,9 @@ function abrirCooldowns() {
   menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
-/* FILA */
+/* =========================
+   FILA
+========================= */
 socket.on("filaAtualizada", (fila) => {
   const contador = document.getElementById("contador");
   const primeiro = document.getElementById("primeiro");
@@ -100,7 +101,7 @@ socket.on("filaAtualizada", (fila) => {
 
   const alunoAtual = fila[0];
 
-  // TIMER
+  // TIMER SEM RESETAR
   if (primeiroAtual !== alunoAtual.nome) {
     primeiroAtual = alunoAtual.nome;
     clearInterval(timerInterval);
@@ -127,7 +128,7 @@ socket.on("filaAtualizada", (fila) => {
     </div>
   `;
 
-  // RESTANTE DA FILA – apenas posição
+  // RESTO DA FILA
   fila.slice(1).forEach((aluno, index) => {
     filaDiv.innerHTML += `
       <div class="aluno">
@@ -141,13 +142,17 @@ socket.on("filaAtualizada", (fila) => {
   });
 });
 
-/* BOTÕES */
+/* =========================
+   BOTÕES
+========================= */
 function proximoAluno() { socket.emit("proximoAluno"); }
 function alunoVoltou() { socket.emit("alunoVoltou"); }
 function moverCima(nome) { socket.emit("moverCima", nome); }
 function moverBaixo(nome) { socket.emit("moverBaixo", nome); }
 
-/* LISTA */
+/* =========================
+   LISTA DE ALUNOS
+========================= */
 const listaAlunos = document.getElementById("listaAlunos");
 function renderizarListaAlunos() {
   listaAlunos.innerHTML = "";
@@ -163,7 +168,9 @@ function renderizarListaAlunos() {
 renderizarListaAlunos();
 function adicionarAluno(nome){ socket.emit("entrarFila", nome); }
 
-/* CONTADOR DE VEZES NO BANHEIRO */
+/* =========================
+   CONTADOR DE VEZES NO BANHEIRO
+========================= */
 socket.on("contadorAtualizado",(contador)=>{
   const div = document.getElementById("contadorBanheiro");
   div.innerHTML = "";
@@ -173,7 +180,9 @@ socket.on("contadorAtualizado",(contador)=>{
   });
 });
 
-/* COOLDOWN */
+/* =========================
+   COOLDOWNS
+========================= */
 socket.on("cooldownsAtualizados", cooldowns=>{ cooldownsGlobais=cooldowns; });
 setInterval(()=>{
   const div = document.getElementById("cooldowns");
