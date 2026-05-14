@@ -1,15 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel Professor</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Botão de logout no canto */
+    #logoutContainer {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: sans-serif;
+    }
+    #logoutBtn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #logoutBtn:hover {
+      background: #dc2626;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- LOGOUT -->
-  <button id="logoutBtn" onclick="logout()" style="position:absolute;top:10px;right:10px;display:none;">Sair</button>
+  <!-- LOGOUT E USUÁRIO -->
+  <div id="logoutContainer" style="display:none;">
+    <span id="usuarioLogado"></span>
+    <button id="logoutBtn" onclick="logout()">Sair</button>
+  </div>
 
   <!-- MENU COOLDOWN -->
   <div class="cooldownMenu">
@@ -24,8 +51,8 @@
   <div id="login" class="loginContainer">
     <div class="loginBox">
       <h1>Painel Professor</h1>
-      <input id="usuario" type="text" placeholder="Usuário"/>
-      <input id="senha" type="password" placeholder="Senha"/>
+      <input id="usuario" type="text" placeholder="Usuário" />
+      <input id="senha" type="password" placeholder="Senha" />
       <button onclick="login()">Entrar</button>
     </div>
   </div>
@@ -37,15 +64,20 @@
       <div id="contador">0 alunos</div>
     </div>
 
+    <!-- BOTÕES -->
     <div class="acoes">
       <button onclick="proximoAluno()">Avisar Aluno</button>
       <button onclick="alunoVoltou()">Aluno Voltou</button>
       <button onclick="abrirLista()">☰</button>
     </div>
 
+    <!-- PRIMEIRO ALUNO -->
     <div id="primeiro"></div>
+
+    <!-- FILA -->
     <div id="fila"></div>
 
+    <!-- MENU ALUNOS -->
     <div id="menuAlunos" class="menuAlunos" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
         <h2>Adicionar aluno</h2>
@@ -54,6 +86,7 @@
       <div id="listaAlunos"></div>
     </div>
 
+    <!-- CONTADOR DE VEZES NO BANHEIRO -->
     <div class="contadorTitulo">
       <h2>Vezes no banheiro</h2>
     </div>

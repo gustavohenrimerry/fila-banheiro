@@ -37,16 +37,24 @@ let primeiroAtual = "";
 let usuarioAtual = "";
 
 /* LOGIN */
+let usuarioAtual = ""; // variável global do usuário logado
+
 function login() {
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
 
   if ((usuario === "heitor" && senha === "sala10tec") ||
       (usuario === "fernanda" && senha === "sala10port")) {
+
     usuarioAtual = usuario;
+
     document.getElementById("login").style.display = "none";
     document.getElementById("painel").style.display = "block";
-    document.getElementById("logoutBtn").style.display = "block";
+
+    // Mostra logout e usuário logado
+    document.getElementById("logoutContainer").style.display = "flex";
+    document.getElementById("usuarioLogado").innerText = `Usuário: ${usuarioAtual}`;
+
   } else {
     alert("Login inválido");
   }
@@ -56,7 +64,9 @@ function logout() {
   usuarioAtual = "";
   document.getElementById("login").style.display = "block";
   document.getElementById("painel").style.display = "none";
-  document.getElementById("logoutBtn").style.display = "none";
+  document.getElementById("logoutContainer").style.display = "none";
+
+  // limpa inputs
   document.getElementById("usuario").value = "";
   document.getElementById("senha").value = "";
 }
