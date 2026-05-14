@@ -36,17 +36,13 @@ let cooldownsGlobais = {};
 let primeiroAtual = "";
 let usuarioAtual = "";
 
-/* =========================
-   LOGIN
-========================= */
+/* LOGIN */
 function login() {
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
 
-  if (
-    (usuario === "heitor" && senha === "sala10tec") ||
-    (usuario === "fernanda" && senha === "sala10port")
-  ) {
+  if ((usuario === "heitor" && senha === "sala10tec") ||
+      (usuario === "fernanda" && senha === "sala10port")) {
     usuarioAtual = usuario;
     document.getElementById("login").style.display = "none";
     document.getElementById("painel").style.display = "block";
@@ -65,26 +61,18 @@ function logout() {
   document.getElementById("senha").value = "";
 }
 
-/* =========================
-   MENUS
-========================= */
+/* MENUS */
 function abrirLista() {
   const menu = document.getElementById("menuAlunos");
   menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
-
-function fecharLista() {
-  document.getElementById("menuAlunos").style.display = "none";
-}
-
+function fecharLista() { document.getElementById("menuAlunos").style.display = "none"; }
 function abrirCooldowns() {
   const menu = document.getElementById("cooldownLista");
   menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
-/* =========================
-   FILA
-========================= */
+/* FILA */
 socket.on("filaAtualizada", (fila) => {
   const contador = document.getElementById("contador");
   const primeiro = document.getElementById("primeiro");
@@ -102,7 +90,7 @@ socket.on("filaAtualizada", (fila) => {
 
   const alunoAtual = fila[0];
 
-  // TIMER DO PRIMEIRO ALUNO
+  // TIMER
   if (primeiroAtual !== alunoAtual.nome) {
     primeiroAtual = alunoAtual.nome;
     clearInterval(timerInterval);
@@ -111,8 +99,8 @@ socket.on("filaAtualizada", (fila) => {
     function atualizarTimer() {
       const diff = Date.now() - alunoAtual.inicio;
       const total = Math.floor(diff / 1000);
-      const min = String(Math.floor(total / 60)).padStart(2, "0");
-      const sec = String(total % 60).padStart(2, "0");
+      const min = String(Math.floor(total / 60)).padStart(2,"0");
+      const sec = String(total % 60).padStart(2,"0");
       const timer = document.getElementById("timer");
       if (timer) timer.innerHTML = `${min}:${sec}`;
     }
@@ -129,12 +117,11 @@ socket.on("filaAtualizada", (fila) => {
     </div>
   `;
 
-  // RESTANTE DA FILA COM POSIÇÃO E VEZES NO BANHEIRO
+  // RESTANTE DA FILA – apenas posição
   fila.slice(1).forEach((aluno, index) => {
-    const vezes = aluno.contador || 0;
     filaDiv.innerHTML += `
       <div class="aluno">
-        <span>${aluno.nome} – ${index + 2}º lugar – Foi ao banheiro ${vezes} vezes</span>
+        <span>${aluno.nome} – ${index + 2}º lugar</span>
         <div style="display:flex;gap:8px;align-items:center;">
           <button onclick="moverCima('${aluno.nome}')" style="background:#22c55e;border:none;color:white;border-radius:8px;padding:6px 10px;cursor:pointer;">↑</button>
           <button onclick="moverBaixo('${aluno.nome}')" style="background:#ef4444;border:none;color:white;border-radius:8px;padding:6px 10px;cursor:pointer;">↓</button>
@@ -144,21 +131,17 @@ socket.on("filaAtualizada", (fila) => {
   });
 });
 
-/* =========================
-   BOTÕES
-========================= */
+/* BOTÕES */
 function proximoAluno() { socket.emit("proximoAluno"); }
 function alunoVoltou() { socket.emit("alunoVoltou"); }
 function moverCima(nome) { socket.emit("moverCima", nome); }
 function moverBaixo(nome) { socket.emit("moverBaixo", nome); }
 
-/* =========================
-   LISTA DE ADICIONAR ALUNO
-========================= */
+/* LISTA */
 const listaAlunos = document.getElementById("listaAlunos");
 function renderizarListaAlunos() {
   listaAlunos.innerHTML = "";
-  alunos.forEach((aluno) => {
+  alunos.forEach(aluno=>{
     listaAlunos.innerHTML += `
       <div class="aluno" style="padding:10px;margin-bottom:8px;">
         <span style="font-size:13px;width:80%;">${aluno}</span>
@@ -168,34 +151,30 @@ function renderizarListaAlunos() {
   });
 }
 renderizarListaAlunos();
-function adicionarAluno(nome) { socket.emit("entrarFila", nome); }
+function adicionarAluno(nome){ socket.emit("entrarFila", nome); }
 
-/* =========================
-   CONTADOR
-========================= */
+/* CONTADOR DE VEZES NO BANHEIRO */
 socket.on("contadorAtualizado",(contador)=>{
   const div = document.getElementById("contadorBanheiro");
   div.innerHTML = "";
   alunos.forEach(aluno=>{
-    const vezes = contador[aluno]||0;
+    const vezes = contador[aluno] || 0;
     div.innerHTML += `<div class="aluno"><span style="font-size:14px;">${aluno}</span><div class="posicao">${vezes}</div></div>`;
   });
 });
 
-/* =========================
-   COOLDOWN
-========================= */
-socket.on("cooldownsAtualizados", cooldowns => { cooldownsGlobais = cooldowns; });
+/* COOLDOWN */
+socket.on("cooldownsAtualizados", cooldowns=>{ cooldownsGlobais=cooldowns; });
 setInterval(()=>{
   const div = document.getElementById("cooldowns");
   if(!div) return;
-  div.innerHTML = "";
-  const agora = Date.now();
+  div.innerHTML="";
+  const agora=Date.now();
   Object.keys(cooldownsGlobais).forEach(nome=>{
-    const tempo = cooldownsGlobais[nome]-agora;
+    const tempo=cooldownsGlobais[nome]-agora;
     if(tempo>0){
-      const min = String(Math.floor(tempo/60000)).padStart(2,"0");
-      const sec = String(Math.floor((tempo%60000)/1000)).padStart(2,"0");
+      const min=String(Math.floor(tempo/60000)).padStart(2,"0");
+      const sec=String(Math.floor((tempo%60000)/1000)).padStart(2,"0");
       div.innerHTML += `<div class="cooldownAluno"><span>${nome}</span><span>${min}:${sec}</span></div>`;
     }
   });
