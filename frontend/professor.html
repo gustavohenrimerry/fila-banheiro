@@ -32,16 +32,20 @@
       <div id="contador">0 alunos</div>
     </div>
 
+    <!-- BOTÕES -->
     <div class="acoes">
       <button onclick="proximoAluno()">Avisar Aluno</button>
       <button onclick="alunoVoltou()">Aluno Voltou</button>
       <button onclick="abrirLista()">☰</button>
-      <button onclick="abrirCooldowns()">⏰</button>
     </div>
 
+    <!-- PRIMEIRO -->
     <div id="primeiro"></div>
+
+    <!-- FILA -->
     <div id="fila"></div>
 
+    <!-- MENU ALUNOS -->
     <div id="menuAlunos" class="menuAlunos" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
         <h2>Adicionar aluno</h2>
@@ -50,14 +54,19 @@
       <div id="listaAlunos"></div>
     </div>
 
+    <!-- CONTADOR -->
     <div class="contadorTitulo">
       <h2>Vezes no banheiro</h2>
     </div>
     <div id="contadorBanheiro"></div>
 
-    <div id="cooldownLista" class="cooldownLista" style="display:none;">
-      <h3>Cooldown</h3>
-      <div id="cooldowns"></div>
+    <!-- BOTÃO COOLDOWN FIXO (bolinha canto inferior direito) -->
+    <div class="cooldownMenu" style="position:fixed; bottom:20px; right:20px; z-index:1000;">
+      <button class="cooldownBotao" onclick="abrirCooldowns()" style="width:50px; height:50px; border-radius:50%; border:none; background:#facc15; color:#000; font-size:24px; cursor:pointer;">⏰</button>
+      <div id="cooldownLista" class="cooldownLista" style="display:none; position:absolute; bottom:60px; right:0; background:white; padding:10px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.2); width:200px; max-height:300px; overflow-y:auto;">
+        <h3>Cooldown</h3>
+        <div id="cooldowns"></div>
+      </div>
     </div>
 
   </div>
