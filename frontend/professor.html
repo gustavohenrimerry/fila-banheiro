@@ -1,186 +1,51 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
-  <meta charset="UTF-8" />
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-
-  <title>Painel Professor</title>
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  />
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel Professor</title>
+<link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-  <!-- MENU COOLDOWN -->
+<!-- LOGIN -->
+<div id="login" class="loginContainer">
+  <div class="loginBox">
+    <h1>Painel Professor</h1>
+    <input id="usuario" type="text" placeholder="Usuário" />
+    <input id="senha" type="password" placeholder="Senha" />
+    <button onclick="login()">Entrar</button>
+  </div>
+</div>
 
-  <div class="cooldownMenu">
+<!-- PAINEL -->
+<div id="painel" style="display:none;">
 
-    <button
-      class="cooldownBotao"
-      onclick="abrirCooldowns()"
-    >
-      ⏰
-    </button>
+  <div class="topo"></div>
 
-    <div
-      id="cooldownLista"
-      class="cooldownLista"
-      style="display:none;"
-    >
-
-      <h3>Cooldown</h3>
-
-      <div id="cooldowns"></div>
-
-    </div>
-
+  <div class="acoes">
+    <button onclick="proximoAluno()">Avisar Aluno</button>
+    <button onclick="alunoVoltou()">Aluno Voltou</button>
+    <button onclick="abrirLista()">☰</button>
   </div>
 
-  <!-- LOGIN -->
+  <div id="primeiro"></div>
+  <div id="fila"></div>
 
-  <div
-    id="login"
-    class="loginContainer"
-  >
-
-    <div class="loginBox">
-
-      <h1>Painel Professor</h1>
-
-      <input
-        id="usuario"
-        type="text"
-        placeholder="Usuário"
-      />
-
-      <input
-        id="senha"
-        type="password"
-        placeholder="Senha"
-      />
-
-      <button onclick="login()">
-        Entrar
-      </button>
-
+  <div id="menuAlunos" class="menuAlunos" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+      <h2>Adicionar aluno</h2>
+      <button onclick="fecharLista()" style="width:40px;height:40px;border:none;border-radius:50%;background:#5b3df5;color:white;font-size:20px;cursor:pointer;">✕</button>
     </div>
-
+    <div id="listaAlunos"></div>
   </div>
 
-  <!-- PAINEL -->
+  <div class="contadorTitulo"><h2>Vezes no banheiro</h2></div>
+  <div id="contadorBanheiro"></div>
+  <div id="cooldowns"></div>
+</div>
 
-  <div
-    id="painel"
-    style="display:none;"
-  >
-
-    <!-- TOPO -->
-
-    <div class="topo">
-
-      <h1>
-        Controle Banheiro
-      </h1>
-
-      <div id="contador">
-        0 alunos
-      </div>
-
-    </div>
-
-    <!-- BOTÕES -->
-
-    <div class="acoes">
-
-      <button onclick="proximoAluno()">
-        Avisar Aluno
-      </button>
-
-      <button onclick="alunoVoltou()">
-        Aluno Voltou
-      </button>
-
-      <button onclick="abrirLista()">
-        ☰
-      </button>
-
-    </div>
-
-    <!-- PRIMEIRO -->
-
-    <div id="primeiro"></div>
-
-    <!-- FILA -->
-
-    <div id="fila"></div>
-
-    <!-- MENU ALUNOS -->
-
-    <div
-      id="menuAlunos"
-      class="menuAlunos"
-      style="display:none;"
-    >
-
-      <div
-        style="
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          margin-bottom:15px;
-        "
-      >
-
-        <h2>Adicionar aluno</h2>
-
-        <button
-          onclick="fecharLista()"
-          style="
-            width:40px;
-            height:40px;
-            border:none;
-            border-radius:50%;
-            background:#5b3df5;
-            color:white;
-            font-size:20px;
-            cursor:pointer;
-          "
-        >
-          ✕
-        </button>
-
-      </div>
-
-      <div id="listaAlunos"></div>
-
-    </div>
-
-    <!-- CONTADOR -->
-
-    <div class="contadorTitulo">
-
-      <h2>
-        Vezes no banheiro
-      </h2>
-
-    </div>
-
-    <div id="contadorBanheiro"></div>
-
-  </div>
-
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
-  <script src="professor.js"></script>
-
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="professor.js"></script>
 </body>
 </html>

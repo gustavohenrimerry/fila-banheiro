@@ -7,10 +7,7 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  },
+  cors: { origin: "*", methods: ["GET", "POST"] },
   transports: ["polling"]
 });
 
@@ -60,217 +57,93 @@ const alunos = [
 ];
 
 function norm(str) {
-  return str
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  return str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 io.on("connection", (socket) => {
-
   socket.emit("filaAtualizada", fila);
   socket.emit("cooldownsAtualizados", cooldowns);
   socket.emit("contadorAtualizado", historico);
 
-  /* =========================
-     ENTRAR FILA
-  ========================= */
-
   socket.on("entrarFila", (nome) => {
-
     const input = norm(nome);
+    const aluno = alunos.find(a => norm(a).startsWith(input));
+    if (!aluno) return socket.emit("erroNome", "Nome incorreto");
 
-    const aluno = alunos.find(a =>
-      norm(a).startsWith(input)
-    );
+    if (fila.find(f => f.nome === aluno)) return socket.emit("erroNome", "Já está na fila");
 
-    if (!aluno) {
-      socket.emit("erroNome", "Nome incorreto");
-      return;
+    if (cooldowns[aluno] && Date.now() < cooldowns[aluno]) {
+      const minutos = Math.ceil((cooldowns[aluno] - Date.now()) / 60000);
+      return socket.emit("erroNome", `Espere ${minutos} minutos antes de entrar novamente`);
     }
 
-    if (fila.find(f => f.nome === aluno)) {
-      socket.emit("erroNome", "Já está na fila");
-      return;
-    }
-
-    if (
-      cooldowns[aluno]
-      &&
-      Date.now() < cooldowns[aluno]
-    ) {
-
-      const minutos = Math.ceil(
-        (cooldowns[aluno] - Date.now()) / 60000
-      );
-
-      socket.emit(
-        "erroNome",
-        `Espere ${minutos} minutos antes de entrar novamente`
-      );
-
-      return;
-    }
-
+    const inicioPrimeiro = fila[0]?.inicio || Date.now();
     fila.push({
       nome: aluno,
       entrada: Date.now(),
-      inicio:
-        fila.length === 0
-          ? Date.now()
-          : null
+      inicio: fila.length === 0 ? Date.now() : inicioPrimeiro
     });
 
     io.emit("filaAtualizada", fila);
-
   });
-
-  /* =========================
-     SAIR FILA
-  ========================= */
 
   socket.on("sairFila", (nome) => {
-
     const input = norm(nome);
+    fila = fila.filter(f => !norm(f.nome).startsWith(input));
 
-    fila = fila.filter(f =>
-      !norm(f.nome).startsWith(input)
-    );
+    if (fila[0] && !fila[0].inicio) fila[0].inicio = Date.now();
 
     io.emit("filaAtualizada", fila);
-
   });
-
-  /* =========================
-     AVISAR ALUNO
-  ========================= */
 
   socket.on("proximoAluno", () => {
-
     if (fila.length === 0) return;
-
     io.emit("vezAluno", fila[0].nome);
-
-    io.emit(
-      "mostrarPopup",
-      fila[0].nome
-    );
-
+    io.emit("mostrarPopup", fila[0].nome);
   });
 
-  /* =========================
-     ALUNO VOLTOU
-  ========================= */
-
   socket.on("alunoVoltou", () => {
-
     if (fila.length === 0) return;
 
     const aluno = fila.shift();
+    historico[aluno.nome] = (historico[aluno.nome] || 0) + 1;
+    cooldowns[aluno.nome] = Date.now() + 50 * 60 * 1000;
 
-    historico[aluno.nome] =
-      (historico[aluno.nome] || 0) + 1;
-
-    cooldowns[aluno.nome] =
-      Date.now() + (50 * 60 * 1000);
-
-    // NOVO PRIMEIRO
     if (fila[0]) {
-
-      // REINICIA TIMER
       fila[0].inicio = Date.now();
-
-      // AVISA NOVO PRIMEIRO
-      io.emit(
-        "vezAluno",
-        fila[0].nome
-      );
-
-      io.emit(
-        "mostrarPopup",
-        fila[0].nome
-      );
-
+      io.emit("vezAluno", fila[0].nome);
+      io.emit("mostrarPopup", fila[0].nome);
     }
 
     io.emit("filaAtualizada", fila);
     io.emit("cooldownsAtualizados", cooldowns);
     io.emit("contadorAtualizado", historico);
-
   });
 
-  /* =========================
-     MOVER CIMA
-  ========================= */
-
   socket.on("moverCima", (nomeAluno) => {
-
-    const index = fila.findIndex(f =>
-      norm(f.nome) === norm(nomeAluno)
-    );
-
+    const index = fila.findIndex(f => norm(f.nome) === norm(nomeAluno));
     if (index <= 0) return;
 
-    const temp = fila[index - 1];
-    fila[index - 1] = fila[index];
-    fila[index] = temp;
+    [fila[index - 1], fila[index]] = [fila[index], fila[index - 1]];
 
-    // SE VIROU PRIMEIRO
     if (index - 1 === 0) {
-
-      // REINICIA TIMER
       fila[0].inicio = Date.now();
-
-      // MOSTRA POPUP
-      io.emit(
-        "vezAluno",
-        fila[0].nome
-      );
-
-      io.emit(
-        "mostrarPopup",
-        fila[0].nome
-      );
-
+      io.emit("vezAluno", fila[0].nome);
+      io.emit("mostrarPopup", fila[0].nome);
     }
 
     io.emit("filaAtualizada", fila);
-
   });
-
-  /* =========================
-     MOVER BAIXO
-  ========================= */
 
   socket.on("moverBaixo", (nomeAluno) => {
+    const index = fila.findIndex(f => norm(f.nome) === norm(nomeAluno));
+    if (index === -1 || index >= fila.length - 1) return;
 
-    const index = fila.findIndex(f =>
-      norm(f.nome) === norm(nomeAluno)
-    );
-
-    if (
-      index === -1
-      ||
-      index >= fila.length - 1
-    ) return;
-
-    const temp = fila[index + 1];
-    fila[index + 1] = fila[index];
-    fila[index] = temp;
+    [fila[index + 1], fila[index]] = [fila[index], fila[index + 1]];
 
     io.emit("filaAtualizada", fila);
-
   });
-
 });
 
 const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, "0.0.0.0", () => {
-
-  console.log(
-    "Servidor rodando na porta " + PORT
-  );
-
-});
+server.listen(PORT, "0.0.0.0", () => console.log("Servidor rodando na porta " + PORT));
