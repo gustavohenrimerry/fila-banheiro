@@ -27,26 +27,21 @@
   <!-- PAINEL -->
   <div id="painel" style="display:none;">
 
-    <!-- TOPO -->
     <div class="topo">
       <h1>Controle Banheiro</h1>
       <div id="contador">0 alunos</div>
     </div>
 
-    <!-- BOTÕES -->
     <div class="acoes">
       <button onclick="proximoAluno()">Avisar Aluno</button>
       <button onclick="alunoVoltou()">Aluno Voltou</button>
       <button onclick="abrirLista()">☰</button>
+      <button onclick="abrirCooldowns()">⏰</button>
     </div>
 
-    <!-- PRIMEIRO -->
     <div id="primeiro"></div>
-
-    <!-- FILA -->
     <div id="fila"></div>
 
-    <!-- MENU ALUNOS -->
     <div id="menuAlunos" class="menuAlunos" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
         <h2>Adicionar aluno</h2>
@@ -55,13 +50,11 @@
       <div id="listaAlunos"></div>
     </div>
 
-    <!-- CONTADOR -->
     <div class="contadorTitulo">
       <h2>Vezes no banheiro</h2>
     </div>
     <div id="contadorBanheiro"></div>
 
-    <!-- COOLDOWNS -->
     <div id="cooldownLista" class="cooldownLista" style="display:none;">
       <h3>Cooldown</h3>
       <div id="cooldowns"></div>
@@ -71,6 +64,5 @@
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="professor.js"></script>
-
 </body>
 </html>

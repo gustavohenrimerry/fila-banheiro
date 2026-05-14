@@ -19,7 +19,7 @@ app.get("/", (req,res)=>{
 });
 
 let fila = [];
-let historico = {}; // contador de vezes no banheiro
+let historico = {};
 const cooldowns = {};
 
 const alunos = [
@@ -58,14 +58,11 @@ function norm(str){
 }
 
 io.on("connection", (socket)=>{
-  // envia estado inicial
   socket.emit("filaAtualizada", fila);
   socket.emit("cooldownsAtualizados", cooldowns);
   socket.emit("contadorAtualizado", historico);
 
-  /* =========================
-     Entrar na fila
-  ========================= */
+  // Entrar na fila
   socket.on("entrarFila", nome=>{
     const input = norm(nome);
     const aluno = alunos.find(a=>norm(a).startsWith(input));
@@ -81,15 +78,12 @@ io.on("connection", (socket)=>{
     io.emit("filaAtualizada", fila);
   });
 
-  /* =========================
-     Sair da fila
-  ========================= */
+  // Sair da fila
   socket.on("sairFila", nome=>{
     const input = norm(nome);
     const primeiroAntes = fila[0]?.nome;
     fila = fila.filter(f=>!norm(f.nome).startsWith(input));
 
-    // Se o primeiro mudou, reinicia timer e envia popup
     if(fila[0] && fila[0].nome !== primeiroAntes){
       fila[0].inicio = Date.now();
       io.emit("vezAluno", fila[0].nome);
@@ -99,18 +93,14 @@ io.on("connection", (socket)=>{
     io.emit("filaAtualizada", fila);
   });
 
-  /* =========================
-     Próximo aluno
-  ========================= */
+  // Próximo aluno
   socket.on("proximoAluno", ()=>{
     if(fila.length===0) return;
     io.emit("vezAluno", fila[0].nome);
     io.emit("mostrarPopup", fila[0].nome);
   });
 
-  /* =========================
-     Aluno voltou
-  ========================= */
+  // Aluno voltou
   socket.on("alunoVoltou", ()=>{
     if(fila.length===0) return;
 
@@ -118,7 +108,6 @@ io.on("connection", (socket)=>{
     historico[aluno.nome] = (historico[aluno.nome]||0)+1;
     cooldowns[aluno.nome] = Date.now()+50*60*1000;
 
-    // Reinicia timer do próximo aluno
     if(fila[0]){
       fila[0].inicio = Date.now();
       io.emit("vezAluno", fila[0].nome);
@@ -130,15 +119,12 @@ io.on("connection", (socket)=>{
     io.emit("contadorAtualizado", historico);
   });
 
-  /* =========================
-     Mover aluno para cima
-  ========================= */
+  // Mover aluno para cima
   socket.on("moverCima", nome=>{
     const i = fila.findIndex(f=>norm(f.nome)===norm(nome));
     if(i<=0) return;
     [fila[i-1],fila[i]] = [fila[i],fila[i-1]];
 
-    // Se o aluno virou o primeiro, reinicia timer e envia popup
     if(i-1===0){
       fila[0].inicio = Date.now();
       io.emit("vezAluno",fila[0].nome);
@@ -148,16 +134,13 @@ io.on("connection", (socket)=>{
     io.emit("filaAtualizada",fila);
   });
 
-  /* =========================
-     Mover aluno para baixo
-  ========================= */
+  // Mover aluno para baixo
   socket.on("moverBaixo", nome=>{
     const i = fila.findIndex(f=>norm(f.nome)===norm(nome));
     if(i===-1 || i>=fila.length-1) return;
     [fila[i],fila[i+1]] = [fila[i+1],fila[i]];
     io.emit("filaAtualizada",fila);
   });
-
 });
 
 const PORT = process.env.PORT || 3000;
