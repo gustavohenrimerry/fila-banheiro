@@ -5,46 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel Professor</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Botão de logout no canto */
-    #logoutContainer {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: sans-serif;
-    }
-    #logoutBtn {
-      background: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    #logoutBtn:hover {
-      background: #dc2626;
-    }
-  </style>
 </head>
 <body>
 
-  <!-- LOGOUT E USUÁRIO -->
-  <div id="logoutContainer" style="display:none;">
-    <span id="usuarioLogado"></span>
-    <button id="logoutBtn" onclick="logout()">Sair</button>
-  </div>
-
-  <!-- MENU COOLDOWN -->
-  <div class="cooldownMenu">
-    <button class="cooldownBotao" onclick="abrirCooldowns()">⏰</button>
-    <div id="cooldownLista" class="cooldownLista" style="display:none;">
-      <h3>Cooldown</h3>
-      <div id="cooldowns"></div>
-    </div>
+  <!-- LOGOUT / USUÁRIO -->
+  <div id="logoutContainer" style="display:none; justify-content:flex-end; align-items:center; padding:10px;">
+    <span id="usuarioLogado" style="margin-right:15px;"></span>
+    <button onclick="logout()" style="padding:6px 12px; border:none; border-radius:6px; background:#ef4444; color:white; cursor:pointer;">Sair</button>
   </div>
 
   <!-- LOGIN -->
@@ -59,6 +26,8 @@
 
   <!-- PAINEL -->
   <div id="painel" style="display:none;">
+
+    <!-- TOPO -->
     <div class="topo">
       <h1>Controle Banheiro</h1>
       <div id="contador">0 alunos</div>
@@ -71,7 +40,7 @@
       <button onclick="abrirLista()">☰</button>
     </div>
 
-    <!-- PRIMEIRO ALUNO -->
+    <!-- PRIMEIRO -->
     <div id="primeiro"></div>
 
     <!-- FILA -->
@@ -86,14 +55,22 @@
       <div id="listaAlunos"></div>
     </div>
 
-    <!-- CONTADOR DE VEZES NO BANHEIRO -->
+    <!-- CONTADOR -->
     <div class="contadorTitulo">
       <h2>Vezes no banheiro</h2>
     </div>
     <div id="contadorBanheiro"></div>
+
+    <!-- COOLDOWNS -->
+    <div id="cooldownLista" class="cooldownLista" style="display:none;">
+      <h3>Cooldown</h3>
+      <div id="cooldowns"></div>
+    </div>
+
   </div>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="professor.js"></script>
+
 </body>
 </html>
