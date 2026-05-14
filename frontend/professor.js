@@ -37,13 +37,24 @@ const alunos = [
 let timerInterval = null;
 let cooldownsGlobais = {};
 let primeiroAtual = "";
-let filaAtual = [];
 
-/* LOGIN */
+/* =========================
+   LOGIN
+========================= */
 function login() {
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
-  if (usuario === "heitor" && senha === "sala10tec") {
+
+  const usuariosValidos = [
+    { usuario: "heitor", senha: "sala10tec" },
+    { usuario: "fernanda", senha: "sala10port" }
+  ];
+
+  const valido = usuariosValidos.some(
+    u => u.usuario === usuario && u.senha === senha
+  );
+
+  if (valido) {
     document.getElementById("login").style.display = "none";
     document.getElementById("painel").style.display = "block";
   } else {
@@ -51,23 +62,27 @@ function login() {
   }
 }
 
-/* MENUS */
+/* =========================
+   MENUS
+========================= */
 function abrirLista() {
   const menu = document.getElementById("menuAlunos");
   menu.style.display = menu.style.display === "block" ? "none" : "block";
 }
+
 function fecharLista() {
   document.getElementById("menuAlunos").style.display = "none";
 }
+
 function abrirCooldowns() {
   const menu = document.getElementById("cooldownLista");
   menu.style.display = menu.style.display === "block" ? "none" : "block";
 }
 
-/* FILA */
+/* =========================
+   FILA
+========================= */
 socket.on("filaAtualizada", (fila) => {
-  filaAtual = fila;
-
   const contador = document.getElementById("contador");
   const primeiro = document.getElementById("primeiro");
   const filaDiv = document.getElementById("fila");
@@ -77,19 +92,22 @@ socket.on("filaAtualizada", (fila) => {
 
   if (fila.length <= 0) {
     clearInterval(timerInterval);
-    primeiro.innerHTML = `<div class="primeiroAluno"><h2>Fila vazia</h2></div>`;
+    primeiro.innerHTML = `
+      <div class="primeiroAluno">
+        <h2>Fila vazia</h2>
+      </div>
+    `;
     primeiroAtual = "";
     return;
   }
 
   const alunoAtual = fila[0];
 
-  // TIMER: reinicia apenas quando o primeiro muda
+  // TIMER reinicia apenas quando aluno mudou ou voltou
   if (primeiroAtual !== alunoAtual.nome) {
     primeiroAtual = alunoAtual.nome;
     clearInterval(timerInterval);
-
-    alunoAtual.inicio = alunoAtual.inicio || Date.now();
+    if (!alunoAtual.inicio) alunoAtual.inicio = Date.now();
 
     function atualizarTimer() {
       const agora = Date.now();
@@ -121,29 +139,37 @@ socket.on("filaAtualizada", (fila) => {
         <div style="display:flex;gap:8px;align-items:center;">
           <button onclick="moverCima('${aluno.nome}')" style="background:#22c55e;border:none;color:white;border-radius:8px;padding:6px 10px;cursor:pointer;">↑</button>
           <button onclick="moverBaixo('${aluno.nome}')" style="background:#ef4444;border:none;color:white;border-radius:8px;padding:6px 10px;cursor:pointer;">↓</button>
-          <div class="posicao">${index + 2}</div>
+          <div class="posicao">${index + 2} lugar, foi no banheiro ${aluno.contador || 0} vezes</div>
         </div>
       </div>
     `;
   });
 });
 
-/* BOTÕES */
+/* =========================
+   BOTÕES
+========================= */
 function proximoAluno() {
   socket.emit("proximoAluno");
 }
+
 function alunoVoltou() {
   socket.emit("alunoVoltou");
 }
+
 function moverCima(nome) {
   socket.emit("moverCima", nome);
 }
+
 function moverBaixo(nome) {
   socket.emit("moverBaixo", nome);
 }
 
-/* LISTA */
+/* =========================
+   LISTA DE ALUNOS
+========================= */
 const listaAlunos = document.getElementById("listaAlunos");
+
 function renderizarListaAlunos() {
   listaAlunos.innerHTML = "";
   alunos.forEach((aluno) => {
@@ -155,39 +181,36 @@ function renderizarListaAlunos() {
     `;
   });
 }
+
 renderizarListaAlunos();
+
 function adicionarAluno(nome) {
   socket.emit("entrarFila", nome);
 }
 
-/* CONTADOR */
+/* =========================
+   CONTADOR
+========================= */
 socket.on("contadorAtualizado", (contador) => {
   const div = document.getElementById("contadorBanheiro");
   div.innerHTML = "";
-
   alunos.forEach((aluno) => {
-    const vezes = contador[aluno] || 0;
-    const posicao = filaAtual.findIndex(a => a.nome === aluno);
-    let status = "Fora da fila";
-    if (posicao === 0) status = "No banheiro";
-    else if (posicao > 0) status = `${posicao + 1}º lugar`;
-
     div.innerHTML += `
       <div class="aluno">
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          <span style="font-size:14px;font-weight:bold;">${aluno}</span>
-          <small style="opacity:0.8;">${status}</small>
-        </div>
-        <div class="posicao" style="min-width:70px;">${vezes}x</div>
+        <span style="font-size:14px;">${aluno}</span>
+        <div class="posicao">${contador[aluno] || 0}</div>
       </div>
     `;
   });
 });
 
-/* COOLDOWNS */
+/* =========================
+   COOLDOWNS
+========================= */
 socket.on("cooldownsAtualizados", (cooldowns) => {
   cooldownsGlobais = cooldowns;
 });
+
 setInterval(() => {
   const div = document.getElementById("cooldowns");
   if (!div) return;
@@ -198,7 +221,12 @@ setInterval(() => {
     if (tempo > 0) {
       const min = String(Math.floor(tempo / 60000)).padStart(2, "0");
       const sec = String(Math.floor((tempo % 60000) / 1000)).padStart(2, "0");
-      div.innerHTML += `<div class="cooldownAluno"><span>${nome}</span><span>${min}:${sec}</span></div>`;
+      div.innerHTML += `
+        <div class="cooldownAluno">
+          <span>${nome}</span>
+          <span>${min}:${sec}</span>
+        </div>
+      `;
     }
   });
 }, 1000);
