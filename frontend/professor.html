@@ -1,36 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel Professor</title>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    #logoutContainer {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #f3f4f6;
-      padding: 6px 12px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      z-index: 1000;
-      font-family: sans-serif;
-    }
-    #logoutContainer span { font-weight:bold; color:#111827; }
-    #logoutContainer button {
-      padding:6px 12px; border:none; border-radius:6px;
-      background:#ef4444; color:white; cursor:pointer; font-weight:bold;
-    }
-    .cooldownMenu {
-      position: fixed; bottom: 20px; right: 20px;
-    }
-    .cooldownBotao { padding:10px 14px; border:none; border-radius:50%; background:#fbbf24; cursor:pointer; font-size:20px; }
-    .cooldownLista { display:none; background:#f3f4f6; padding:10px; border-radius:6px; max-height:300px; overflow:auto; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Painel Professor</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  body { font-family:sans-serif; }
+  #logoutContainer { position: fixed; top:10px; right:10px; display:flex; align-items:center; gap:10px; background:#f3f4f6; padding:6px 12px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.15); z-index:1000; }
+  #logoutContainer span { font-weight:bold; color:#111827; }
+  #logoutContainer button { padding:6px 12px; border:none; border-radius:6px; background:#ef4444; color:white; cursor:pointer; font-weight:bold; }
+  .loginBox input { width:200px; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:6px; }
+  .loginBox button { width:100%; padding:8px; border:none; border-radius:6px; background:#5b3df5; color:white; cursor:pointer; font-weight:bold; }
+  .cooldownMenu { position:fixed; bottom:10px; right:10px; }
+  .cooldownBotao { font-size:24px; padding:10px; border:none; border-radius:50%; background:#f59e0b; color:white; cursor:pointer; }
+</style>
 </head>
 <body>
 
@@ -39,11 +23,11 @@
   <button onclick="logout()">Sair</button>
 </div>
 
-<div id="login" class="loginContainer">
+<div id="login">
   <div class="loginBox">
     <h1>Painel Professor</h1>
-    <input id="usuario" type="text" placeholder="Usuário"/>
-    <input id="senha" type="password" placeholder="Senha"/>
+    <input id="usuario" type="text" placeholder="Usuário" />
+    <input id="senha" type="password" placeholder="Senha" />
     <button onclick="login()">Entrar</button>
   </div>
 </div>
@@ -63,7 +47,7 @@
   <div id="primeiro"></div>
   <div id="fila"></div>
 
-  <div id="menuAlunos" class="menuAlunos" style="display:none;">
+  <div id="menuAlunos" style="display:none;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
       <h2>Adicionar aluno</h2>
       <button onclick="fecharLista()" style="width:40px;height:40px;border:none;border-radius:50%;background:#5b3df5;color:white;font-size:20px;cursor:pointer;">✕</button>
@@ -71,12 +55,14 @@
     <div id="listaAlunos"></div>
   </div>
 
-  <div class="contadorTitulo"><h2>Vezes no banheiro</h2></div>
+  <div class="contadorTitulo">
+    <h2>Vezes no banheiro</h2>
+  </div>
   <div id="contadorBanheiro"></div>
 
   <div class="cooldownMenu">
     <button class="cooldownBotao" onclick="abrirCooldowns()">⏰</button>
-    <div id="cooldownLista" class="cooldownLista">
+    <div id="cooldownLista" style="display:none;">
       <h3>Cooldown</h3>
       <div id="cooldowns"></div>
     </div>
