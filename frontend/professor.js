@@ -1,54 +1,21 @@
 const socket = io("https://fila-banheiro-vst4.onrender.com",{transports:["polling"]});
-
-const alunos = [
-  "Ana Beatriz Dos Santos Nascimento",
-  "Ana Luisa Tosi Baldino",
-  "Bruna Geovana Amaral Muniz",
-  "Fernanda Oliveira Santos",
-  "Gabrielle Da Costa Silva",
-  "Geovanna Felix Alves De Lima",
-  "Guilherme Nery Bernardino Da Luz",
-  "Gustavo Henrique Rodrigues Souza",
-  "Heliene Aquino Souza Barbosa",
-  "Isabelly Da Silva Nascimento",
-  "Jadilson Inacio Dos Santos",
-  "Jennifer Nascimento Santos",
-  "Joao Pedro Costa De Souza",
-  "Julia Kathelen Barbosa Batista Dos Santos",
-  "Julyanna Silva Do Nascimento",
-  "Keisy Rodrigues Do Nascimento",
-  "Leonardo De Deus Malinoski",
-  "Leticia Vitoria Barros Da Silva",
-  "Marcos Alexandre Da Silva Prado",
-  "Maria Eduarda De Oliveira Ribeiro",
-  "Moises Ferreira Soares",
-  "Pedro Henrique Reis Silva",
-  "Rebeca Keyzi Rodrigues Oliveira",
-  "Renan Da Silva Santos",
-  "Thiago Da Silva Araujo",
-  "Thiago Salomão Martins",
-  "Vinicius Inacio Portela Da Silva",
-  "Yuri Vieira Nogueira"
-];
-
 let timerInterval = null;
-let cooldownsGlobais = {};
 let primeiroAtual = "";
+let cooldownsGlobais = {};
 let usuarioLogado = "";
 
-/* LOGIN */
+/* LOGIN / LOGOUT */
 function login(){
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
   if((usuario==="heitor" && senha==="sala10tec") || (usuario==="fernanda" && senha==="sala10port")){
     usuarioLogado = usuario;
-    document.getElementById("usuarioLogado").innerText = "Logado como: " + usuarioLogado;
+    document.getElementById("usuarioLogado").innerText = "Logado como: "+usuarioLogado;
     document.getElementById("logoutContainer").style.display="flex";
     document.getElementById("login").style.display="none";
     document.getElementById("painel").style.display="block";
   } else { alert("Login inválido"); }
 }
-
 function logout(){
   usuarioLogado="";
   document.getElementById("login").style.display="block";
@@ -113,32 +80,8 @@ function moverCima(nome){socket.emit("moverCima",nome);}
 function moverBaixo(nome){socket.emit("moverBaixo",nome);}
 function adicionarAluno(nome){socket.emit("entrarFila",nome);}
 
-/* LISTA */
-const listaAlunos=document.getElementById("listaAlunos");
-function renderizarListaAlunos(){
-  listaAlunos.innerHTML="";
-  alunos.forEach(aluno=>{
-    listaAlunos.innerHTML+=`<div class="aluno" style="padding:10px;margin-bottom:8px;">
-      <span style="font-size:13px;width:80%;">${aluno}</span>
-      <button onclick="adicionarAluno('${aluno}')" style="width:35px;height:35px;border:none;border-radius:50%;background:#5b3df5;color:white;font-size:24px;cursor:pointer;">+</button>
-    </div>`;
-  });
-}
-renderizarListaAlunos();
-
-/* CONTADOR */
-socket.on("contadorAtualizado",contador=>{
-  const div=document.getElementById("contadorBanheiro");
-  div.innerHTML="";
-  alunos.forEach(aluno=>{
-    div.innerHTML+=`<div class="aluno"><span style="font-size:14px;">${aluno}</span><div class="posicao">${contador[aluno]||0}</div></div>`;
-  });
-});
-
 /* COOLDOWNS */
-socket.on("cooldownsAtualizados", cooldowns=>{
-  cooldownsGlobais=cooldowns;
-});
+socket.on("cooldownsAtualizados", cooldowns=>{cooldownsGlobais=cooldowns;});
 setInterval(()=>{
   const div=document.getElementById("cooldowns");
   if(!div) return;
