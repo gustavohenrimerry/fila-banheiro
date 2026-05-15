@@ -1,21 +1,27 @@
 const socket = io("https://fila-banheiro-vst4.onrender.com",{transports:["polling"]});
+
 let timerInterval = null;
 let primeiroAtual = "";
 let cooldownsGlobais = {};
 let usuarioLogado = "";
+let alunos = []; // lista de todos os alunos do banco
 
 /* LOGIN / LOGOUT */
 function login(){
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
+
   if((usuario==="heitor" && senha==="sala10tec") || (usuario==="fernanda" && senha==="sala10port")){
     usuarioLogado = usuario;
-    document.getElementById("usuarioLogado").innerText = "Logado como: "+usuarioLogado;
+    document.getElementById("usuarioLogado").innerText = "Logado como: " + usuarioLogado;
     document.getElementById("logoutContainer").style.display="flex";
     document.getElementById("login").style.display="none";
     document.getElementById("painel").style.display="block";
-  } else { alert("Login inválido"); }
+  } else { 
+    alert("Login inválido"); 
+  }
 }
+
 function logout(){
   usuarioLogado="";
   document.getElementById("login").style.display="block";
@@ -63,6 +69,7 @@ socket.on("filaAtualizada", fila=>{
 
   primeiro.innerHTML=`<div class="primeiroAluno"><h2>PRÓXIMO ALUNO</h2><h1>${alunoAtual.nome}</h1><div id="timer"></div></div>`;
 
+  // Lista de alunos na fila
   fila.slice(1).forEach((aluno,index)=>{
     filaDiv.innerHTML+=`<div class="aluno"><span>${aluno.nome}</span>
       <div style="display:flex;gap:8px;align-items:center;">
@@ -80,8 +87,31 @@ function moverCima(nome){socket.emit("moverCima",nome);}
 function moverBaixo(nome){socket.emit("moverBaixo",nome);}
 function adicionarAluno(nome){socket.emit("entrarFila",nome);}
 
+/* LISTA DE ALUNOS + CONTADOR */
+const listaAlunos=document.getElementById("listaAlunos");
+
+socket.on("contadorAtualizado", contador=>{
+  listaAlunos.innerHTML="";
+  if(!alunos.length) return;
+
+  alunos.forEach(aluno=>{
+    const vezes = contador[aluno.nome] || 0;
+    listaAlunos.innerHTML+=`<div class="aluno" style="padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;">${aluno.nome} - foi ${vezes} vezes</span>
+      <button onclick="adicionarAluno('${aluno.nome}')" style="width:35px;height:35px;border:none;border-radius:50%;background:#5b3df5;color:white;font-size:24px;cursor:pointer;">+</button>
+    </div>`;
+  });
+});
+
+/* RECEBE ALUNOS DO SERVIDOR */
+socket.on("alunosAtualizados", alunosDB=>{
+  alunos = alunosDB; // atualiza lista de alunos
+});
+
 /* COOLDOWNS */
-socket.on("cooldownsAtualizados", cooldowns=>{cooldownsGlobais=cooldowns;});
+socket.on("cooldownsAtualizados", cooldowns=>{
+  cooldownsGlobais=cooldowns;
+});
 setInterval(()=>{
   const div=document.getElementById("cooldowns");
   if(!div) return;
