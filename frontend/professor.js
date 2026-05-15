@@ -1,93 +1,104 @@
-const socket = io("https://fila-banheiro-vst4.onrender.com",{transports:["polling"]});
+const socket = io("https://fila-banheiro-vst4.onrender.com", { transports: ["polling"] });
 
-let alunosDB = [];          // Lista completa do banco
+let alunosDB = []; // Lista completa do banco
 let timerInterval = null;
-let cooldownsGlobais = {};  
+let cooldownsGlobais = {};
 let primeiroAtual = "";
 let usuarioLogado = "";
-let contadorGlobal = {};    // Histórico de vezes no banheiro
+let contadorGlobal = {};
 
-/* LOGIN / LOGOUT */
-function login(){
+// =========================
+// LOGIN / LOGOUT
+// =========================
+function login() {
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
 
-  if((usuario==="heitor" && senha==="sala10tec") || (usuario==="fernanda" && senha==="sala10port")){
+  if ((usuario === "heitor" && senha === "sala10tec") || (usuario === "fernanda" && senha === "sala10port")) {
     usuarioLogado = usuario;
     document.getElementById("usuarioLogado").innerText = "Logado como: " + usuarioLogado;
-    document.getElementById("logoutContainer").style.display="flex";
-    document.getElementById("login").style.display="none";
-    document.getElementById("painel").style.display="block";
+    document.getElementById("logoutContainer").style.display = "flex";
+    document.getElementById("login").style.display = "none";
+    document.getElementById("painel").style.display = "block";
   } else {
     alert("Login inválido");
   }
 }
 
-function logout(){
-  usuarioLogado="";
-  document.getElementById("login").style.display="block";
-  document.getElementById("painel").style.display="none";
-  document.getElementById("logoutContainer").style.display="none";
+function logout() {
+  usuarioLogado = "";
+  document.getElementById("login").style.display = "block";
+  document.getElementById("painel").style.display = "none";
+  document.getElementById("logoutContainer").style.display = "none";
 }
 
-/* MENUS */
-function abrirLista(){const menu=document.getElementById("menuAlunos");menu.style.display=menu.style.display==="block"?"none":"block";}
-function fecharLista(){document.getElementById("menuAlunos").style.display="none";}
-function abrirCooldowns(){const menu=document.getElementById("cooldownLista");menu.style.display=menu.style.display==="block"?"none":"block";}
+// =========================
+// MENUS
+// =========================
+function abrirLista() { 
+  const menu = document.getElementById("menuAlunos");
+  menu.style.display = menu.style.display === "block" ? "none" : "block"; 
+}
+function fecharLista() { document.getElementById("menuAlunos").style.display = "none"; }
+function abrirCooldowns() { 
+  const menu = document.getElementById("cooldownLista"); 
+  menu.style.display = menu.style.display === "block" ? "none" : "block"; 
+}
 
-/* SOCKET EVENTS */
+// =========================
+// SOCKET EVENTS
+// =========================
 
-// Recebe lista de alunos do banco de dados
-socket.on("alunosAtualizados", lista=>{
+// Lista completa de alunos do banco
+socket.on("alunosAtualizados", lista => {
   alunosDB = lista;
   renderizarListaAlunos();       // Menu de adicionar alunos
   renderizarContadorBanheiro();  // Contador de vezes no banheiro
 });
 
 // Atualiza fila
-socket.on("filaAtualizada", fila=>{
-  const contador=document.getElementById("contador");
-  const primeiro=document.getElementById("primeiro");
-  const filaDiv=document.getElementById("fila");
-  contador.innerHTML=`${fila.length} alunos`;
-  filaDiv.innerHTML="";
+socket.on("filaAtualizada", fila => {
+  const contador = document.getElementById("contador");
+  const primeiro = document.getElementById("primeiro");
+  const filaDiv = document.getElementById("fila");
+  contador.innerHTML = `${fila.length} alunos`;
+  filaDiv.innerHTML = "";
 
-  if(fila.length<=0){
+  if (fila.length <= 0) {
     clearInterval(timerInterval);
-    primeiro.innerHTML=`<div class="primeiroAluno"><h2>Fila vazia</h2></div>`;
-    primeiroAtual="";
+    primeiro.innerHTML = `<div class="primeiroAluno"><h2>Fila vazia</h2></div>`;
+    primeiroAtual = "";
     return;
   }
 
   const alunoAtual = fila[0];
-  if(primeiroAtual !== alunoAtual.nome){
+  if (primeiroAtual !== alunoAtual.nome) {
     primeiroAtual = alunoAtual.nome;
     clearInterval(timerInterval);
-    if(!alunoAtual.inicio) alunoAtual.inicio = Date.now();
-    function atualizarTimer(){
+    if (!alunoAtual.inicio) alunoAtual.inicio = Date.now();
+    function atualizarTimer() {
       const agora = Date.now();
       const diff = agora - alunoAtual.inicio;
-      const total = Math.floor(diff/1000);
-      const min = String(Math.floor(total/60)).padStart(2,"0");
-      const sec = String(total%60).padStart(2,"0");
+      const total = Math.floor(diff / 1000);
+      const min = String(Math.floor(total / 60)).padStart(2, "0");
+      const sec = String(total % 60).padStart(2, "0");
       const timer = document.getElementById("timer");
-      if(timer) timer.innerHTML = `${min}:${sec}`;
+      if (timer) timer.innerHTML = `${min}:${sec}`;
     }
     atualizarTimer();
-    timerInterval = setInterval(atualizarTimer,1000);
+    timerInterval = setInterval(atualizarTimer, 1000);
   }
 
   primeiro.innerHTML = `<div class="primeiroAluno"><h2>PRÓXIMO ALUNO</h2><h1>${alunoAtual.nome}</h1><div id="timer"></div></div>`;
 
-  // Lista restante da fila
-  fila.slice(1).forEach((aluno,index)=>{
-    filaDiv.innerHTML+=`
+  fila.slice(1).forEach((aluno, index) => {
+    filaDiv.innerHTML += `
       <div class="aluno">
         <span>${aluno.nome}</span>
         <div style="display:flex;gap:8px;align-items:center;">
           <button onclick="moverCima('${aluno.nome}')" style="background:#22c55e;border:none;color:white;border-radius:8px;padding:6px 10px;cursor:pointer;">↑</button>
           <button onclick="moverBaixo('${aluno.nome}')" style="background:#ef4444;border:none;color:white;border-radius:8px;padding:6px 10px;cursor:pointer;">↓</button>
-          <div class="posicao">${index+2}º lugar</div>
+          <div class="posicao">${index + 2}º lugar</div>
         </div>
       </div>
     `;
@@ -95,45 +106,49 @@ socket.on("filaAtualizada", fila=>{
 });
 
 // Atualiza contador
-socket.on("contadorAtualizado", contador=>{
+socket.on("contadorAtualizado", contador => {
   contadorGlobal = contador;
   renderizarContadorBanheiro();
 });
 
 // Cooldowns
-socket.on("cooldownsAtualizados", cooldowns=>{
+socket.on("cooldownsAtualizados", cooldowns => {
   cooldownsGlobais = cooldowns;
 });
 
-setInterval(()=>{
+setInterval(() => {
   const div = document.getElementById("cooldowns");
-  if(!div) return;
-  div.innerHTML="";
+  if (!div) return;
+  div.innerHTML = "";
   const agora = Date.now();
-  Object.keys(cooldownsGlobais).forEach(nome=>{
-    const tempo = cooldownsGlobais[nome]-agora;
-    if(tempo>0){
-      const min = String(Math.floor(tempo/60000)).padStart(2,"0");
-      const sec = String(Math.floor((tempo%60000)/1000)).padStart(2,"0");
-      div.innerHTML+=`<div class="cooldownAluno"><span>${nome}</span><span>${min}:${sec}</span></div>`;
+  Object.keys(cooldownsGlobais).forEach(nome => {
+    const tempo = cooldownsGlobais[nome] - agora;
+    if (tempo > 0) {
+      const min = String(Math.floor(tempo / 60000)).padStart(2, "0");
+      const sec = String(Math.floor((tempo % 60000) / 1000)).padStart(2, "0");
+      div.innerHTML += `<div class="cooldownAluno"><span>${nome}</span><span>${min}:${sec}</span></div>`;
     }
   });
-},1000);
+}, 1000);
 
-/* FUNÇÕES DE FILA */
-function proximoAluno(){socket.emit("proximoAluno");}
-function alunoVoltou(){socket.emit("alunoVoltou");}
-function moverCima(nome){socket.emit("moverCima",nome);}
-function moverBaixo(nome){socket.emit("moverBaixo",nome);}
-function adicionarAluno(nome){socket.emit("entrarFila",nome);}
+// =========================
+// FUNÇÕES DE FILA
+// =========================
+function proximoAluno() { socket.emit("proximoAluno"); }
+function alunoVoltou() { socket.emit("alunoVoltou"); }
+function moverCima(nome) { socket.emit("moverCima", nome); }
+function moverBaixo(nome) { socket.emit("moverBaixo", nome); }
+function adicionarAluno(nome) { socket.emit("entrarFila", nome); }
 
-/* RENDER MENU ADICIONAR ALUNO */
-function renderizarListaAlunos(){
+// =========================
+// RENDER MENU ADICIONAR ALUNO
+// =========================
+function renderizarListaAlunos() {
   const listaAlunos = document.getElementById("listaAlunos");
-  if(!alunosDB) return;
-  listaAlunos.innerHTML="";
-  alunosDB.forEach(aluno=>{
-    listaAlunos.innerHTML+=`
+  if (!alunosDB) return;
+  listaAlunos.innerHTML = "";
+  alunosDB.forEach(aluno => {
+    listaAlunos.innerHTML += `
       <div class="aluno" style="padding:10px;margin-bottom:8px;">
         <span style="font-size:13px;width:80%;">${aluno}</span>
         <button onclick="adicionarAluno('${aluno}')" style="width:35px;height:35px;border:none;border-radius:50%;background:#5b3df5;color:white;font-size:24px;cursor:pointer;">+</button>
@@ -142,12 +157,14 @@ function renderizarListaAlunos(){
   });
 }
 
-/* RENDER CONTADOR BANHEIRO */
-function renderizarContadorBanheiro(){
+// =========================
+// RENDER CONTADOR BANHEIRO
+// =========================
+function renderizarContadorBanheiro() {
   const div = document.getElementById("contadorBanheiro");
   div.innerHTML = "";
-  if(!alunosDB) return;
-  alunosDB.forEach(aluno=>{
-    div.innerHTML+=`<div class="aluno"><span style="font-size:14px;">${aluno}</span><div class="posicao">${contadorGlobal[aluno]||0}</div></div>`;
+  if (!alunosDB) return;
+  alunosDB.forEach(aluno => {
+    div.innerHTML += `<div class="aluno"><span style="font-size:14px;">${aluno}</span><div class="posicao">${contadorGlobal[aluno]||0}</div></div>`;
   });
 }
