@@ -51,13 +51,20 @@ async function getAlunosDB() {
   }
 }
 
-io.on("connection", async (socket) => {
+io.on("connection", (socket) => {
 
-  // Lista de alunos do banco
-  const alunosDB = await getAlunosDB();
-  socket.emit("alunosAtualizados", alunosDB);
+  // Busca alunos do DB dentro de um bloco seguro async
+  (async () => {
+    try {
+      const alunosDB = await getAlunosDB();
+      socket.emit("alunosAtualizados", alunosDB);
+    } catch (err) {
+      console.error("Erro ao carregar alunos:", err);
+      socket.emit("alunosAtualizados", []); // envia lista vazia se der erro
+    }
+  })();
 
-  // Estado inicial
+  // Envia estado inicial
   socket.emit("filaAtualizada", fila);
   socket.emit("cooldownsAtualizados", cooldowns);
   socket.emit("contadorAtualizado", historico);
