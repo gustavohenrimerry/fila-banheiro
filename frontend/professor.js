@@ -1,8 +1,4 @@
-// =========================
 // professor.js
-// =========================
-
-// Conectar ao servidor backend Node (coloque seu URL do Render)
 const socket = io("https://fila-banheiro-vst4.onrender.com", { transports: ["polling"] });
 
 let alunosDB = [];
@@ -10,7 +6,7 @@ let timerInterval = null;
 let cooldownsGlobais = {};
 let primeiroAtual = "";
 let usuarioLogado = "";
-let contadorGlobal = {}; // contador de vezes no banheiro
+let contadorGlobal = {};
 
 // =========================
 // LOGIN / LOGOUT
@@ -40,25 +36,15 @@ function logout() {
 // =========================
 // MENUS
 // =========================
-function abrirLista() {
-  const menu = document.getElementById("menuAlunos");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
-}
-
-function fecharLista() {
-  document.getElementById("menuAlunos").style.display = "none";
-}
-
-function abrirCooldowns() {
-  const menu = document.getElementById("cooldownLista");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
-}
+function abrirLista() { const menu = document.getElementById("menuAlunos"); menu.style.display = menu.style.display === "block" ? "none" : "block"; }
+function fecharLista() { document.getElementById("menuAlunos").style.display = "none"; }
+function abrirCooldowns() { const menu = document.getElementById("cooldownLista"); menu.style.display = menu.style.display === "block" ? "none" : "block"; }
 
 // =========================
 // SOCKET EVENTS
 // =========================
 
-// Recebe a lista de alunos do backend (Supabase)
+// Lista de alunos do banco
 socket.on("alunosAtualizados", lista => {
   alunosDB = lista;
   renderizarListaAlunos();
@@ -116,7 +102,7 @@ socket.on("filaAtualizada", fila => {
 
 // Atualiza contador de vezes no banheiro
 socket.on("contadorAtualizado", contador => {
-  contadorGlobal = contador; // atualiza objeto global
+  contadorGlobal = contador;
   renderizarContadorBanheiro();
 });
 
