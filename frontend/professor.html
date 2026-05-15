@@ -36,20 +36,7 @@
     }
 
     /* Centraliza login */
-    .loginContainer {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+
     .loginBox input {
       width: 200px;
       padding: 8px;
@@ -68,36 +55,6 @@
       font-weight: bold;
     }
 
-    /* Cooldown fixo canto inferior direito */
-    .cooldownMenu {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1000;
-    }
-    .cooldownBotao {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: none;
-      background: #facc15;
-      color: #000;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    .cooldownLista {
-      display: none;
-      position: absolute;
-      bottom: 60px;
-      right: 0;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      width: 200px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
   </style>
 </head>
 <body>

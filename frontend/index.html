@@ -1,42 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Fila do Banheiro</title>
-
-<link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fila do Banheiro</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-<div class="container">
-
-  <h1>Fila do Banheiro</h1>
-
-  <p class="subtitulo">
-    Entre na fila virtual da sala
-  </p>
-
-  <input id="nome" placeholder="Digite seu nome" onkeydown="if(event.key==='Enter') entrarFila()">
-
-  <button class="btn-entrar" onclick="entrarFila()">
-    Entrar na fila
-  </button>
-
-  <button class="btn-sair" onclick="sairFila()">
-    Sair da fila
-  </button>
-
-  <div id="status"></div>
-
-  <div id="popup"></div>
-
-</div>
+  <div class="container">
+    <h1>Fila do Banheiro</h1>
+    <p class="subtitulo">
+      Entre na fila virtual da sala
+    </p>
+    <input id="nome" placeholder="Digite seu nome" onkeydown="if(event.key==='Enter') entrarFila()">
+    <button class="btn-entrar" onclick="entrarFila()">
+      Entrar na fila
+    </button>
+    <button class="btn-sair" onclick="sairFila()">
+      Sair da fila
+    </button>
+    <div id="status"></div>
+    <div id="popup"></div>
+  </div>
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="app.js"></script>
